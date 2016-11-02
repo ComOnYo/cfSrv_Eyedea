@@ -335,15 +335,31 @@ while True:
         client.setLog(channel)
 
     elif sel == "connect all":
-        cT = [0]*10
-        for i in range(2):
-            cT[i] = connectThread(ctrlDrone[i], i)
-            cT[i].start()
+        print("1 : At same time 2 : One at a time")
+        val = int(input("Input:"))
+        if val is 1: 
+            cT = [0]*10
+            for i in range(2):
+                cT[i] = connectThread(ctrlDrone[i], i)
+                cT[i].start()
+
+        elif val is 2:
+            for i in range(2):
+                error = client.Connect(ctrlDrone[i])
+                if error == -1:
+                    print("connect fail!!!")
+                    continue
+                ctrlthread[connCnt] = ctrlThread(ctrlDrone[i], connCnt)
+                ctrlthread[connCnt].start()
+                channelSeq[connCnt] = ctrlDrone[i]
+                connCnt+=1
+
 
     elif sel == "disconnect all":
         for i in range(2):
             client.disConnect(ctrlDrone[i])
             ctrlthread[i].stop()
+        connCnt = 0
 
     elif sel == "control":
         while(1):
