@@ -1,0 +1,51 @@
+{
+  "cpu": {
+    "id1": {
+      "group": "cpu",
+      "ident": 2,
+      "name": "id1",
+      "access": 1,
+      "pytype": "<L",
+      "__class__": "ParamTocElement",
+      "ctype": "uint32_t"
+    },
+    "id0": {
+      "group": "cpu",
+      "ident": 1,
+      "name": "id0",
+      "access": 1,
+      "pytype": "<L",
+      "__class__": "ParamTocElement",
+      "ctype": "uint32_t"
+    },
+    "flash": {
+      "group": "cpu",
+      "ident": 0,
+      "name": "flash",
+      "access": 1,
+      "pytype": "<H",
+      "__class__": "ParamTocElement",
+      "ctype": "uint16_t"
+    },
+    "id2": {
+      "group": "cpu",
+      "ident": 3,
+      "name": "id2",
+      "access": 1,
+      "pytype": "<L",
+      "__class__": "ParamTocElement",
+      "ctype": "uint32_t"
+    }
+  },
+  "system": {
+    "selftestPassed": {
+      "group": "system",
+      "ident": 4,
+      "name": "selftestPassed",
+      "access": 0,
+      "pytype": "<b",
+      "__class__": "ParamTocElement",
+      "ctype": "int8_t"
+    }
+  }
+}

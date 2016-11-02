@@ -1,0 +1,23 @@
+{
+  "link_uri": "radio://0/72/250K",
+  "trim_pitch": -1.0,
+  "enable_zmq_input": false,
+  "input_device": "Sony Computer Entertainment Wireless Controller",
+  "max_yaw": 200,
+  "slew_limit": 45,
+  "open_tabs": "Flight Control,Console,Log TOC,Parameters,Log Blocks,Log Blocks Debugging",
+  "trim_roll": 1.0,
+  "device_config_mapping": {
+    "Sony Computer Entertainment Wireless Controller": "PS4_Mode_1"
+  },
+  "max_rp": 30,
+  "flightmode": "Normal",
+  "slew_rate": 30,
+  "auto_reconnect": false,
+  "input_device_blacklist": "(VirtualBox|VMware)",
+  "enable_debug_driver": false,
+  "client_side_xmode": false,
+  "min_thrust": 25,
+  "max_thrust": 80,
+  "ui_update_period": 100
+}
