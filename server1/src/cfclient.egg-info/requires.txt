@@ -1,0 +1,5 @@
+cflib==0.1.0
+appdirs==1.4.0
+pyzmq
+
+[dev]

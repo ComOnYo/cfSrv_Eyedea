@@ -1,0 +1,14 @@
+
+Run method
+1. ./runSrv.sh 
+
+2. python3 /optitrack_Control/main.py
+
+if you want to show Drone's log data(roll,pitch,yaw,thrust,remain battery)
+=> python3 view_log.py
+==========================================
+
+Error resolve method
+
+No such files (eyedea.py, info) Error
+=> ./creatLink.sh

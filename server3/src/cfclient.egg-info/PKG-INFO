@@ -1,0 +1,14 @@
+Metadata-Version: 1.1
+Name: cfclient
+Version: 2016.4.1
+Summary: Bitcraze Cazyflie quadcopter client
+Home-page: http://www.bitcraze.io
+Author: Bitcraze team
+Author-email: contact@bitcraze.se
+License: UNKNOWN
+Description: UNKNOWN
+Keywords: quadcopter crazyflie
+Platform: UNKNOWN
+Classifier: License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5

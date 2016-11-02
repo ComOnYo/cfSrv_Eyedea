@@ -1,0 +1,6 @@
+[console_scripts]
+cfclient = cfclient.gui:main
+cfloader = cfloader:main
+cfzmq = cfzmq:main
+cfheadless = cfclient.headless:main
+
