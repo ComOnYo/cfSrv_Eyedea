@@ -128,3 +128,8 @@ def setControl(channel="", roll=0.0, pitch=0.0, yaw=0.0, thrust=0):
     #print(json)
     ctrlSocket[idx].send_json(json)
 
+def test(channel=""):
+    ctrlSocket[0] = context.socket(zmq.PUSH)
+    ctrlSocket[0].connect(command.ServerAddr("ctrl", '0'))
+    channelSeq[0] = channel
+

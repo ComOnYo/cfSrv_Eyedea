@@ -149,7 +149,12 @@ class Roll(Thread):
             pass
 
     def change_target(self, num):
-        self.target = target[num][self.drone_idx]
+        (self.pid).desired = target[num][self.drone_idx][2]
+
+    def change_gain(self, p, i, d):
+        (self.pid).kp = p
+        (self.pid).ki = i
+        (self.pid).kd = d
 
     def run(self):
         global roll
@@ -183,7 +188,12 @@ class Pitch(Thread):
             pass
 
     def change_target(self, num):
-        self.target = target[num][self.drone_idx]
+        (self.pid).desired = target[num][self.drone_idx][0]
+
+    def change_gain(self, p, i, d):
+        (self.pid).kp = p
+        (self.pid).ki = i
+        (self.pid).kd = d
 
     def run(self):
         global pitch
@@ -208,6 +218,7 @@ class Yaw(Thread):
         self.target = target[0][self.drone_idx]
         self.sp = False
 
+        self.pid = pidCtrl(self.target[0],1)
     def stop(self):
         self.sp = True
         try:
@@ -216,7 +227,12 @@ class Yaw(Thread):
             pass
 
     def change_target(self, num):
-        self.target = target[num][self.drone_idx]
+        (self.pid).desired = target[num][self.drone_idx][2]
+
+    def change_gain(self, p, i, d):
+        (self.pid).kp = p
+        (self.pid).ki = i
+        (self.pid).kd = d
 
     def run(self):
         global yaw
@@ -247,6 +263,11 @@ class Thrust(Thread):
 
     def change_target(self, num):
         self.target = target[num][self.drone_idx]
+
+    def change_gain(self, p, i, d):
+        (self.pid).kp = p
+        (self.pid).ki = i
+        (self.pid).kd = d
 
     def run(self):
         global thrust
@@ -364,7 +385,7 @@ while True:
     elif sel == "control":
         while(1):
             #Create Drone Operation you want.
-            print("1. thrust input mode(hovering)\n2. only thrust mode\n3. auto hovering(height input)\n4. Multi drone control test\n5. Simulation")
+            print("1. thrust input mode(hovering)\n2. only thrust mode\n3. auto hovering(height input)\n4. Multi drone control test\n5. Simulation\n7.thrust hovering test\n8.roll,pitch,yaw hovering test")
             try:
                 val = int(input("Input : "))
             except Exception as e:
@@ -487,6 +508,60 @@ while True:
                     thrust[0] = int(input("thrust:"))
                     temp = float(input())
                     pitch[0] = temp
+
+            elif val is 7 :
+                channel = str(input("Channel input : "))
+                ctrlthread[0] = ctrlThread(channel, 0)
+                client.test(channel)
+                ctrlthread[0].start()
+
+                channelSeq[0] = channel
+                thrust_thread[0] = Thrust(0)
+                while True:
+                    p = float(input("input p gain:"))
+                    i = float(input("input i gain:"))
+                    d = float(input("input d gain:"))
+                    thrust_thread[0].change_gain(p,i,d)
+                    thrust_thread[0].start()
+                    a = str(input("If you want to stop, Enter any key"))
+                    thrust_thread[0].stop()
+                    thrust[0] = 0
+
+            elif val is 8 :
+                channel = str(input("Channel input : "))
+                ctrlthread[0] = ctrlThread(channel, 0)
+                client.test(channel)
+                ctrlthread[0].start()
+
+                channelSeq[0] = channel
+
+                pitch_thread[0] = Pitch(0)
+                roll_thread[0] = Roll(0)
+                yaw_thread[0] = Yaw(0)
+                thrust_thread[0] = Thrust(0)
+                while True:
+                    p = float(input("input p gain:"))
+                    i = float(input("input i gain:"))
+                    d = float(input("input d gain:"))
+                    pitch_thread[0].change_gain(p,i,d)
+                    roll_thread[0].change_gain(p,i,d)
+                    yaw_thread[0].change_gain(p,i,d)
+
+                    pitch_thread[0].start()
+                    roll_thread[0].start()
+                    yaw_thread[0].start()
+                    thrust_thread[0].start()
+
+                    a = str(input("If you want to stop, Enter any key"))
+                    pitch_thread[0].stop()
+                    roll_thread[0].stop()
+                    yaw_thread[0].stop()
+                    thrust_thread[0].stop()
+                    pitch[0] = 0
+                    roll[0] = 0
+                    yaw[0] = 0
+                    thrust[0] = 0
+
     elif sel == "exit" :
         sys.exit(1)
     elif sel == "help" :
