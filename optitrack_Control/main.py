@@ -2,6 +2,7 @@ import client
 import sys
 from threading import Thread
 import time
+import math
 
 from NatNetClient import NatNetClient
 
@@ -324,6 +325,30 @@ def findChanidx(channel = ""):
             return i;
     return -1;
 
+# Circle      DroneNum, radius
+def sequence_1(num = 0, r = 0):
+    #x^2 + z^2 = r^2
+    init_x = pos[num][0]
+    init_z = pos[num][2]
+
+    while True:
+        # calc Z    z  =       sqrt(r^2 - x^2)
+        target[num][2] = math.sqrt(r**2 - target[num][0]**2)
+
+        while True:
+            # Check whether really move or not
+            if ((target[num][0]-0.010) < pos[num][0]) and (pos[num][0] < (target[num][0]+0.010)) and ((target[num][2]-0.010) < pos[num][2]) and (pos[num][2] < (target[num][2]+0.010)) :
+                # Check up and down based on center.
+                if target[num][2] > 0:
+                    target[num][0] += 0.050
+                elif target[num][2] < 0:
+                    target[num][2] -= 0.050
+                break
+
+        # Check one round
+        if (init_x-0.010) < pos[num][0] and pos[num][0] < (init_x+0.010) and (init_z-0.010) < pos[num][2] and pos[num][2] < (init_z+0.010):
+            break
+
 
 #time.sleep(1)
 #print(pos[0])
@@ -440,7 +465,7 @@ while True:
                 pitch_thread[0].start()
                 thrust_thread[0].start()
 
-                temp = str(input("input:"))
+                temp = str(input("To stop, any input:"))
                 if temp is not None:
                     roll[0] = 0.0
                     pitch[0] = 0.0
@@ -517,6 +542,11 @@ while True:
 
                 channelSeq[0] = channel
                 thrust_thread[0] = Thrust(0)
+                
+                #Test
+                while True:
+                    thrust[0] = int(input("Input thrust : "))
+
                 while True:
                     p = float(input("input p gain:"))
                     i = float(input("input i gain:"))
