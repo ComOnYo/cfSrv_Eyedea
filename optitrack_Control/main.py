@@ -10,8 +10,13 @@ from NatNetClient import NatNetClient
 pos = [0]*10
 
 # target position(Init position)
-target = [[10,10,10],[2,2,2],[3,3,3],[4,4,4],[5,5,5],[6,6,6],[7,7,7],[8,8,8],[9,9,9],[10,10,10]]
+target = [[10,1.000,10],[2,2,2],[3,3,3],[4,4,4],[5,5,5],[6,6,6],[7,7,7],[8,8,8],[9,9,9],[10,10,10]]
 
+# velocity
+velo_x = [0.0]*10
+velo_y = [0.0]*10
+velo_z = [0.0]*10
+velo_time = [0.0]*10
 
 #Input Channel you control 10 Drone
 #This sequence is the same Log sequence.
@@ -22,7 +27,17 @@ ctrlDrone = ['55','11','0','0','0','0','0','0','0','0']
 
 def receiveRigidBodyFrame( id, position, rotation ):
     global pos
+    global velo
+    global velo_time
+
+    #velo[id-1] = (math.sqrt((math.sqrt((position[0]-pos[id-1][0])**2 + (position[2]-pos[id-1][2])**2))**2 + (position[1]-pos[id-1][1])**2)) / (time.time()-velo_time[id-1])
+    velo_x[id-1] = (position[0]-pos[id-1][0]) / (time.time()-velo_time[id-1])
+    velo_y[id-1] = (position[1]-pos[id-1][1]) / (time.time()-velo_time[id-1])
+    velo_z[id-1] = (position[2]-pos[id-1][2]) / (time.time()-velo_time[id-1])
+
     pos[id-1] = list(position)
+	
+    velo_time[id-1] = time.time()
 
 streamingClient = NatNetClient()
 
@@ -85,33 +100,40 @@ class pidCtrl():
         self.error = 0.0
         self.prevError = 0.0
         self.integ = 0.0
+        self.x1 = 0.0
 
         #roll, pitch gain
         if sel is 1:
             self.iLimit = 2.0
             self.iLimitLow = -2.0
-            self.dt = 10.0
+            self.dt = 0.01
             self.deriv = 0.0
             self.kp = 5.0
             self.ki = 0.05
             self.kd = -10.0
+            self.v_kp = 0.0
+            self.v_ki = 0.0
+            self.v_kd = 0.0
         #thrust gain
         else:
             self.iLimit = 8.0
             self.iLimitLow = -3.0
-            self.dt = 10.0
+            self.dt = 0.01
             self.deriv = 0.0
-            self.kp = 10.0
-            self.ki = 1.0
-            self.kd = 600.0
+            self.kp = 2.0
+            self.ki = 0.0
+            self.kd = 0.01
+            self.v_kp = 25.0
+            self.v_ki = 15.0
+            self.v_kd = 0.0
 
         self.num = num
         self.desired = 0.0
         global target
 
     def pidUpdate(self, measured=0.0, coordinate = 0):
-        self.desired = target[self.num][coordinate_idx]
 
+        self.desired = target[self.num][coordinate]
         self.error = self.desired - measured
 
         self.integ += self.error * self.dt
@@ -125,6 +147,29 @@ class pidCtrl():
         outP = self.kp * self.error
         outI = self.ki * self.integ
         outD = self.kd * self.deriv
+
+        output = outP + outI + outD
+        self.prevError = self.error
+
+        return output
+
+    def pidUpdate2(self, velo = 0.0, desired = 0.0):
+
+        self.desired = desired
+        self.error = self.desired - velo
+
+        self.integ += self.error * self.dt
+        if self.integ > self.iLimit :
+            self.integ = self.iLimit
+        elif self.integ < self.iLimitLow :
+            self.integ = self.iLimitLow
+
+        self.x1 = ((0.05*self.prevError)+(self.dt*self.error)) / (0.05+self.dt)
+        self.deriv = (self.error - self.prevError) / self.dt
+
+        outP = self.v_kp * self.error
+        outI = self.v_ki * self.integ
+        outD = self.v_kd * self.deriv
 
         output = outP + outI + outD
         self.prevError = self.error
@@ -149,6 +194,12 @@ class Hovering(Thread):
         self.pid_yaw = pidCtrl(idx, 1)
 
         self.pid_thrust = pidCtrl(idx)
+
+        self.pid_roll2 = pidCtrl(idx, 1)
+        self.pid_pitch2 = pidCtrl(idx, 1)
+        self.pid_yaw2 = pidCtrl(idx, 1)
+
+        self.pid_thrust2 = pidCtrl(idx)
 
         self.sp = False
 
@@ -183,19 +234,22 @@ class Hovering(Thread):
             if (self.sp):
                 break
 
-            #roll control                                        x   t_x
+            #roll control                                        z   t_z
             gap = (self.pid_roll).pidUpdate(float(pos[self.drone_idx][2]), 2)
+            gap = (self.pid_roll2).pidUpdate2(velo_z, gap)
             roll[self.drone_idx] = -gap
             #print("roll gap:" + str(gap))
 
-            #pitch control                                       z   t_z
+            #pitch control                                       x   t_x
             gap = (self.pid_pitch).pidUpdate(float(pos[self.drone_idx][0]), 0)
+            gap = (self.pid_pitch2).pidUpdate2(velo_x, gap)
             pitch[self.drone_idx] = -gap
 
             #yaw control
 
             #thrust control
             gap = (self.pid_thrust).pidUpdate(float(pos[self.drone_idx][1]), 1)
+            gap = (self.pid_thrust2).pidUpdate2(velo_y, gap)
             thrust[self.drone_idx] = -gap
 
             time.sleep(0.01)
@@ -456,8 +510,8 @@ while True:
                 hovering_thread[0] = Hovering(0)
                 
                 #Test
-                while True:
-                    thrust[0] = int(input("Input thrust : "))
+                #while True:
+                #    thrust[0] = int(input("Input thrust : "))
 
                 while True:
                     p = float(input("input p gain:"))
