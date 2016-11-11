@@ -3,6 +3,8 @@ import sys
 from threading import Thread
 import time
 import math
+import signal
+import zmq
 
 from NatNetClient import NatNetClient
 
@@ -10,7 +12,7 @@ from NatNetClient import NatNetClient
 pos = [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]]
 
 # target position(Init position)
-target = [[0.082,1.000,0.078],[2,2,2],[3,3,3],[4,4,4],[5,5,5],[6,6,6],[7,7,7],[8,8,8],[9,9,9],[10,10,10]]
+target = [[0.084,1.500,0.083],[2,2,2],[3,3,3],[4,4,4],[5,5,5],[6,6,6],[7,7,7],[8,8,8],[9,9,9],[10,10,10]]
 
 # velocity
 velo_x = [0.0]*10
@@ -25,6 +27,14 @@ velo_pre_z = [0.0]*10
 #This sequence is the same Log sequence.
 ctrlDrone = ['55','11','0','0','0','0','0','0','0','0']
 
+#
+log_thread = [0]*10
+acc_zw = [0]*10
+
+#
+hovering_thread = [0]*10
+run_chk = 0
+
 #==============================================================
 #Get optitrack position
 
@@ -37,27 +47,35 @@ def receiveRigidBodyFrame( id, position, rotation ):
     global velo_pre_x
     global velo_pre_y
     global velo_pre_z
+    global acc_zw
     rateTau = 0.0001
+
+    global hovering_thread
+    #test
+    #global target
 
     #print(position)
     #velo[id-1] = (math.sqrt((math.sqrt((position[0]-pos[id-1][0])**2 + (position[2]-pos[id-1][2])**2))**2 + (position[1]-pos[id-1][1])**2)) / (time.time()-velo_time[id-1])
-    velo_x[id-1] = (position[0]-pos[id-1][0]) / 0.01 #(time.time()-velo_time[id-1])
-    velo_y[id-1] = (position[1]-pos[id-1][1]) / 0.01 # (time.time()-velo_time[id-1])
-    velo_z[id-1] = (position[2]-pos[id-1][2]) / 0.01 # (time.time()-velo_time[id-1])
+    if run_chk is 1:
+        velo_x[id-1] = (position[0]-pos[id-1][0]) / 0.004 #(time.time()-velo_time[id-1])
+        velo_y[id-1] = (position[1]-pos[id-1][1]) / 0.004 # (time.time()-velo_time[id-1])
+        velo_z[id-1] = (position[2]-pos[id-1][2]) / 0.004 # (time.time()-velo_time[id-1])
 
-    velo_x[id-1] = ((rateTau * velo_pre_x[id-1]) + (0.01 * velo_x[id-1])) / (rateTau + 0.01)
-    velo_y[id-1] = ((rateTau * velo_pre_y[id-1]) + (0.01 * velo_y[id-1])) / (rateTau + 0.01)
-    velo_z[id-1] = ((rateTau * velo_pre_z[id-1]) + (0.01 * velo_z[id-1])) / (rateTau + 0.01)
+        velo_x[id-1] = ((rateTau * velo_pre_x[id-1]) + (0.004 * velo_x[id-1])) / (rateTau + 0.004)
+        velo_y[id-1] = ((rateTau * velo_pre_y[id-1]) + (0.004 * velo_y[id-1])) / (rateTau + 0.004)
+        velo_z[id-1] = ((rateTau * velo_pre_z[id-1]) + (0.004 * velo_z[id-1])) / (rateTau + 0.004)
  
-    velo_pre_x[id-1] = velo_x[id-1]
-    velo_pre_y[id-1] = velo_y[id-1]
-    velo_pre_z[id-1] = velo_z[id-1]
-    #print("velo => " + str(velo_y[id-1]))
-    #print("distance => " + str(position[1]))
+        velo_pre_x[id-1] = velo_x[id-1]
+        velo_pre_y[id-1] = velo_y[id-1]
+        velo_pre_z[id-1] = velo_z[id-1]
+        #print("velo => " + str(velo_y[id-1]))
+        #print("distance => " + str(position[1]))
 
-    pos[id-1] = list(position)
-    
-    velo_time[id-1] = time.time()
+        pos[id-1] = list(position)
+        #print(str(target[0][0]-pos[id-1][0]) + ", " + str(target[0][1]-pos[id-1][1]) + ", " + str(target[0][2]-pos[id-1][2]))
+        velo_time[id-1] = time.time()
+
+        hovering_thread[id-1].run_()
 
 streamingClient = NatNetClient()
 
@@ -76,7 +94,6 @@ roll = [0.0]*10
 yaw = [0.0]*10
 
 ctrlthread = [0]*10
-hovering_thread = [0]*10
 
 roll_thread = [0]*10
 pitch_thread = [0]*10
@@ -86,6 +103,19 @@ thrust_thread = [0]*10
 channelSeq  = [0]*10
 connCnt = 0
 
+log_thread = [0]*10
+
+class _LogThread(Thread):
+    def __init__(self, socket, *args):
+        super(_LogThread, self).__init__(*args)
+        self._socket = socket
+        global acc_zw
+        self.zw = 0.0
+    def run(self):
+        while True:
+            log = self._socket.recv_json()
+            if log["event"] == "data":
+                acc_zw[0] = log["variables"]["acc.zw"]
 
 class ctrlThread(Thread):
     def __init__(self,channel,idx, *args):
@@ -110,8 +140,8 @@ class ctrlThread(Thread):
                 break
             #print(thrust)
             client.setControl(self.channel, roll[self.idx], pitch[self.idx], yaw[self.idx], thrust[self.idx])
-            #print(pitch[self.idx])
-            time.sleep(0.01)
+            #print(str(pitch[self.idx]) + ", " + str(roll[self.idx]) + ", " + str(thrust[self.idx]))
+            time.sleep(0.004)
 
 
 class pidCtrl():
@@ -125,29 +155,32 @@ class pidCtrl():
 
         #roll, pitch gain
         if sel is 1:
-            self.iLimit = 2.0
-            self.iLimitLow = -2.0
-            self.dt = 0.01
+            self.iLimit = 33.0
+            self.iLimitLow = -33.0
+            self.dt = 0.004
             self.deriv = 0.0
-            self.kp = 4.0
-            self.ki = 0.05
-            self.kd = -10.0
-            self.v_kp = 0.0
+            self.kp = 3.0
+            self.ki = 0.0
+            self.kd = 0.0
+            self.v_kp = 10.0
             self.v_ki = 0.0
             self.v_kd = 0.0
         #thrust gain
         else:
-            self.iLimit = 8.0
-            self.iLimitLow = -3.0
-            self.dt = 0.01
+            self.iLimit = 33.0
+            self.iLimitLow = -33.0
+            self.dt = 0.004
             self.deriv = 0.0
-            self.kp = 4.0
+            self.kp = 1.0
             self.ki = 0.0
             self.kd = 0.0
-            self.v_kp = 9000.0
-            self.v_ki = 12000.0
-            self.v_kd = 3500.0
-
+            self.v_kp = 6.0
+            self.v_ki = 0.0
+            self.v_kd = 0.0
+            self.a_kp = 3000.0
+            self.a_ki = 0.0
+            self.a_kd = 500.0
+            self.prevError2 = 0.0
         self.num = num
         self.desired = 0.0
         global target
@@ -177,7 +210,7 @@ class pidCtrl():
     def pidUpdate2(self, velo = 0.0, desired = 0.0):
 
         self.desired = desired
-        self.error = self.desired - velo[self.num]
+        self.error = self.desired - velo
 
         self.integ += self.error * self.dt
         if self.integ > self.iLimit :
@@ -197,6 +230,29 @@ class pidCtrl():
 
         return output
 
+    def pidUpdate3(self, acc_zw = 0.0, desired = 0.0):
+
+        self.desired = desired
+        self.error = self.desired - acc_zw
+
+        self.integ += self.error * self.dt
+        if self.integ > self.iLimit :
+            self.integ = self.iLimit
+        elif self.integ < self.iLimitLow :
+            self.integ = self.iLimitLow
+
+        self.error = ((0.05*self.prevError)+(self.dt*self.error)) / (0.05+self.dt)
+        self.deriv = (self.error - self.prevError) / self.dt
+
+        outP = self.a_kp * self.error
+        outI = self.a_ki * self.integ
+        outD = self.a_kd * self.deriv
+
+        output = outP + outI + outD
+        self.prevError = self.error
+
+        return output
+
 class Hovering(Thread):
     def __init__(self, idx, *args):
         super(Hovering, self).__init__(*args)
@@ -207,6 +263,8 @@ class Hovering(Thread):
         global pitch
         global yaw
         global thrust
+
+        global acc_zw
 
         self.drone_idx = idx
 
@@ -221,6 +279,7 @@ class Hovering(Thread):
         self.pid_yaw2 = pidCtrl(idx, 1)
 
         self.pid_thrust2 = pidCtrl(idx)
+        self.pid_thrust3 = pidCtrl(idx)
 
         self.sp = False
 
@@ -231,58 +290,67 @@ class Hovering(Thread):
         except Exception:
             pass
 
-    def change_gain(self, p, i, d, sel=""):
+    def change_gain(self, p = 0.0, v_p=0.0, v_i=0.0, v_d=0.0, sel=""):
         if sel is "roll" :
             (self.pid_roll).kp = p
             (self.pid_roll).ki = i
             (self.pid_roll).kd = d
         elif sel is "pitch" :
             (self.pid_pitch).kp = p
-            (self.pid_pitch).ki = i
-            (self.pid_pitch).kd = d
+            (self.pid_pitch2).v_kp = v_p
+            (self.pid_pitch2).v_ki = v_i
+            (self.pid_pitch2).v_kd = v_d
+
+            (self.pid_roll).kp = p
+            (self.pid_roll2).v_kp = v_p
+            (self.pid_roll2).v_ki = v_i
+            (self.pid_roll2).v_kd = v_d
+
         elif sel is "yaw" :
             (self.pid_yaw).kp = p
             (self.pid_yaw).ki = i
             (self.pid_yaw).kd = d
         elif sel is "thrust" :
-            (self.pid_thrust2).v_kp = p
-            (self.pid_thrust2).v_ki = i
-            (self.pid_thrust2).v_kd = d
+            (self.pid_thrust3).a_kp = v_p
+            (self.pid_thrust3).a_ki = v_i
+            (self.pid_thrust3).a_kd = v_d
 
-    def run(self):
+    def run_(self):
 
-        while True:
-            if (self.sp):
-                break
+        #while True:
+        #    if (self.sp):
+        #        break
 
-            #roll control                                        z   t_z
-            gap = (self.pid_roll).pidUpdate(float(pos[self.drone_idx][2]), 2)
-            gap = (self.pid_roll2).pidUpdate2(velo_z, gap)
-            #roll[self.drone_idx] = -gap
-            #print("roll gap:" + str(gap))
+        #roll control                                        z   t_z
+        gap = (self.pid_roll).pidUpdate(float(pos[self.drone_idx][2]), 2)
+        gap = (self.pid_roll2).pidUpdate2(velo_z[self.drone_idx], gap)
+        #print(gap)
+        roll[self.drone_idx] = -gap
+        #print("roll gap:" + str(gap))
 
-            #pitch control                                       x   t_x
-            gap = (self.pid_pitch).pidUpdate(float(pos[self.drone_idx][0]), 0)
-            gap = (self.pid_pitch2).pidUpdate2(velo_x, gap)
-            print(gap)
-            pitch[self.drone_idx] = -gap
+        #pitch control                                       x   t_x
+        gap = (self.pid_pitch).pidUpdate(float(pos[self.drone_idx][0]), 0)
+        gap = (self.pid_pitch2).pidUpdate2(velo_x[self.drone_idx], gap)
+        #print(gap)
+        pitch[self.drone_idx] = -gap
 
-            #yaw control
+        #yaw control
 
-            #thrust control
-            gap = (self.pid_thrust).pidUpdate(float(pos[self.drone_idx][1]), 1)
-            #print(gap)
-            #print("")
-            gap = (self.pid_thrust2).pidUpdate2(velo_y, gap)
-            #print(gap)
-            temp = int(38000 + gap)
-            if temp >= 60000:
-                temp = 60000
-            elif temp <= 0:
-                temp = 0
-            thrust[self.drone_idx] = temp
+        #thrust control
+        gap = (self.pid_thrust).pidUpdate(float(pos[self.drone_idx][1]), 1)
+        #print(gap)
+        #print("")
+        gap = (self.pid_thrust2).pidUpdate2(velo_y[self.drone_idx], gap)
+        gap = (self.pid_thrust3).pidUpdate3(acc_zw[self.drone_idx], gap)
+        #print(gap)
+        temp = int(37000 + gap)
+        if temp >= 62000:
+            temp = 62000
+        elif temp <= 0:
+            temp = 0
+        thrust[self.drone_idx] = temp
 
-            time.sleep(0.01)
+        #time.sleep(0.01)
 
 
 #For concurrently connect
@@ -362,6 +430,11 @@ while True:
         ctrlthread[connCnt] = ctrlThread(channel, connCnt)
         ctrlthread[connCnt].start()
         channelSeq[connCnt] = channel
+
+        client.setLog(channel)
+        log_thread[connCnt] = _LogThread(client.getLog(channel))
+        log_thread[connCnt].start()
+
         connCnt+=1
     elif sel == "disconnect" :
         channel = str(input("Channel input :"))
@@ -524,11 +597,55 @@ while True:
                         thrust_thread[i].change_target(num)
 
             elif val is 6 :
+                '''
+                global thrust
+                global pitch
                 thrust[0] = 20000
                 while True:
-                    thrust[0] = int(input("thrust:"))
+                    #thrust[0] = int(input("thrust:"))
                     temp = float(input())
                     pitch[0] = temp
+                '''
+                channel = str(input("Channel input : "))
+                ctrlthread[0] = ctrlThread(channel, 0)
+                client.test(channel)
+                ctrlthread[0].start()
+
+                channelSeq[0] = channel
+                hovering_thread[0] = Hovering(0)
+
+                #Test
+                #while True:
+                #    thrust[0] = int(input("Input thrust : "))
+                global run_chk
+                while True:
+                    #p = float(input("input p gain:"))
+                    #v_p = float(input("input vp gain:"))
+                    #v_i = float(input("input vi gain:"))
+                    #v_d = float(input("input vd gain:"))
+
+                    #hovering_thread[0] = Hovering(0)
+                    #hovering_thread[0].change_gain(p,v_p,v_i,v_d,"pitch")
+                    #hovering_thread[0].change_gain(v_p,v_i,v_d,"thrust")
+
+                    str(input("Start any key"))
+                    run_chk = 1
+                    #hovering_thread[0].start()
+                    while True:
+                        a = str(input("If you want to stop, Enter any key"))
+                        if a is 'w':
+                            pitch[0] += 5.0
+                        elif a is 's':
+                            pitch[0] -= 5.0
+                        elif a is 'q':
+                            run_chk = 0
+                            #hovering_thread[0].stop()
+                            pitch[0] = 0
+                            roll[0] = 0
+                            yaw[0] = 0
+                            thrust[0] = 0
+                            break
+                            #hovering_thread[0] = None
 
             elif val is 7 :
                 channel = str(input("Channel input : "))
@@ -542,22 +659,29 @@ while True:
                 #Test
                 #while True:
                 #    thrust[0] = int(input("Input thrust : "))
-
+                global run_chk
                 while True:
                     p = float(input("input p gain:"))
-                    i = float(input("input i gain:"))
-                    d = float(input("input d gain:"))
+                    v_p = float(input("input vp gain:"))
+                    v_i = float(input("input vi gain:"))
+                    v_d = float(input("input vd gain:"))
+
                     hovering_thread[0] = Hovering(0)
-                    hovering_thread[0].change_gain(p,i,d,"pitch")
-                    hovering_thread[0].start()
+                    hovering_thread[0].change_gain(p,v_p,v_i,v_d,"pitch")
+                    #hovering_thread[0].change_gain(v_p,v_i,v_d,"thrust")
+
+
+                    run_chk = 1
+                    #hovering_thread[0].start()
 
                     a = str(input("If you want to stop, Enter any key"))
-                    hovering_thread[0].stop()
+                    run_chk = 0
+                    #hovering_thread[0].stop()
                     pitch[0] = 0
                     roll[0] = 0
                     yaw[0] = 0
                     thrust[0] = 0
-                    hovering_thread[0] = None
+                    #hovering_thread[0] = None
 
             elif val is 8 :
                 channel = str(input("Channel input : "))

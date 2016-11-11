@@ -8,7 +8,7 @@ def ServerAddr(kind="", idx="") :
         return "tcp://localhost:20"+idx+"4"
 
 def connDrone(channel=""):
-    uri = "radio://0/"+channel+"/250K"
+    uri = "radio://0/"+channel+"/2M"
     send = {
 		"version": 1,
 		"cmd" : "connect",
@@ -48,12 +48,13 @@ log_create = {
     "name" : "stabilizer block",
     "period" : 100,
     "variables" : [
-        "pm.vbat",
-        "pm.state",
-        "stabilizer.roll",
-        "stabilizer.pitch",
-        "stabilizer.yaw",
-        "stabilizer.thrust"
+        #"pm.vbat",
+        #"pm.state",
+        #"stabilizer.roll",
+        #"stabilizer.pitch",
+        #"stabilizer.yaw",
+        #"stabilizer.thrust",
+        "acc.zw"
     ]
 }
 

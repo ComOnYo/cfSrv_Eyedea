@@ -16,6 +16,7 @@ DRONE_CNT = 10
 channelSeq = [0] * DRONE_CNT
 cmdSocket = [0] * DRONE_CNT
 ctrlSocket = [0] * DRONE_CNT
+logSocket = [0] * DRONE_CNT
 
 connCnt = 0
 
@@ -72,6 +73,10 @@ def Connect(channel="", All=False, _idx = 0):
     ctrlSocket[idx] = context.socket(zmq.PUSH)
     ctrlSocket[idx].connect(command.ServerAddr("ctrl", str(idx)))
 
+    logSocket[idx] = context.socket(zmq.SUB)
+    logSocket[idx].connect(command.ServerAddr("log", str(idx)))
+    logSocket[idx].setsockopt_string(zmq.SUBSCRIBE, u"")
+
     channelSeq[idx] = channel
     connCnt+=1
 
@@ -79,6 +84,7 @@ def disConnect(channel=""):
     global connCnt
 
     idx = findChanidx(channel)
+
     if idx == -1 :
         print("Channel : " + channel + " not exist Link!!!")
         return
@@ -118,6 +124,13 @@ def setLog(channel="") :
         print("done!")
     else:
         print("fail!")
+
+def getLog(channel=""):
+    idx = findChanidx(channel)
+    if idx == -1:
+        print("channel is not exist")
+        return
+    return logSocket[idx]
 
 def setControl(channel="", roll=0.0, pitch=0.0, yaw=0.0, thrust=0):
     idx = findChanidx(channel)
