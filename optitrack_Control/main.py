@@ -18,7 +18,6 @@ target = [[0.084,1.500,0.083],[2,2,2],[3,3,3],[4,4,4],[5,5,5],[6,6,6],[7,7,7],[8
 velo_x = [0.0]*10
 velo_y = [0.0]*10
 velo_z = [0.0]*10
-velo_time = [0.0]*10
 velo_pre_x = [0.0]*10
 velo_pre_y = [0.0]*10
 velo_pre_z = [0.0]*10
@@ -26,7 +25,7 @@ velo_pre_z = [0.0]*10
 #Input Channel you control 10 Drone
 #This sequence is the same Log sequence.
 ctrlDrone = ['55','11','0','0','0','0','0','0','0','0']
-
+DroneCnt = 1
 #
 log_thread = [0]*10
 acc_zw = [0]*10
@@ -43,7 +42,6 @@ def receiveRigidBodyFrame( id, position, rotation ):
     global velo_x
     global velo_y
     global velo_z
-    global velo_time
     global velo_pre_x
     global velo_pre_y
     global velo_pre_z
@@ -73,7 +71,6 @@ def receiveRigidBodyFrame( id, position, rotation ):
 
         pos[id-1] = list(position)
         #print(str(target[0][0]-pos[id-1][0]) + ", " + str(target[0][1]-pos[id-1][1]) + ", " + str(target[0][2]-pos[id-1][2]))
-        velo_time[id-1] = time.time()
 
         hovering_thread[id-1].run_()
 
@@ -94,11 +91,6 @@ roll = [0.0]*10
 yaw = [0.0]*10
 
 ctrlthread = [0]*10
-
-roll_thread = [0]*10
-pitch_thread = [0]*10
-yaw_thread = [0]*10
-thrust_thread = [0]*10
 
 channelSeq  = [0]*10
 connCnt = 0
@@ -370,18 +362,16 @@ class connectThread(Thread):
         client.setLog(self.channel)
         ctrlthread[self.idx] = ctrlThread(self.channel, self.idx)
         ctrlthread[self.idx].start()
+
+        log_thread[connCnt] = _LogThread(client.getLog(channel))
+        log_thread[connCnt].start()
+
         channelSeq[self.idx] = self.channel
 
 def land():
-    global roll
-    global pitch
-    global yaw
-    global thrust
+    global target
     for i in range(10):
-        roll[i] = 0.0
-        pitch[i] = 0.0
-        yaw[i] = 0.0
-        thrust[i] = 0
+        target[i][1] = 0.10
 
 def findChanidx(channel = ""):
     for i in range(10) :
@@ -454,18 +444,23 @@ while True:
         val = int(input("Input:"))
         if val is 1: 
             cT = [0]*10
-            for i in range(2):
+            for i in range(Drone_Cnt):
                 cT[i] = connectThread(ctrlDrone[i], i)
                 cT[i].start()
 
         elif val is 2:
-            for i in range(2):
+            for i in range(Drone_Cnt):
                 error = client.Connect(ctrlDrone[i])
                 if error == -1:
                     print("connect fail!!!")
                     continue
                 ctrlthread[connCnt] = ctrlThread(ctrlDrone[i], connCnt)
                 ctrlthread[connCnt].start()
+
+                client.setLog(channel)
+                log_thread[connCnt] = _LogThread(client.getLog(channel))
+                log_thread[connCnt].start()
+
                 channelSeq[connCnt] = ctrlDrone[i]
                 connCnt+=1
 
@@ -576,25 +571,26 @@ while True:
                     thrust[idx2] = temp
 
             elif val is 5 :
-                for i in range(2):
-                    roll_thread[i] = Roll(i)
-                    pitch_thread[i] = Pitch(i)
-                    yaw_thread[i] = Yaw(i)
-                    thrust_thread[i] = Thrust(i)
-                    
-                    roll_thread[i].start()
-                    pitch_thread[i].start()
-                    yaw_thread[i].start()
-                    thrust_thread[i].start()                    
+                global run_chk
+                for i in range(Drone_Cnt):
+                    hovering_thread[i] = Hovering(i)
+
                 while True:
-                    num = int(input("Input target number : "))
-                    if num is -1:
-                        land()
-                    for i in range(10):
-                        roll_thread[i].change_target(num)
-                        pitch_thread[i].change_target(num)
-                        yaw_thread[i].change_target(num)
-                        thrust_thread[i].change_target(num)
+                    str(input("Start any key"))
+                    run_chk = 1
+                    while True:
+                        print("1. land 2. Fly off")
+                        i = str(input("Input : "))
+                        if i is '1':
+                            land()
+                        elif i is '2':
+                            run_chk = 0
+                            for i in range(Drone_Cnt):
+                                pitch[i] = 0
+                                roll[i] = 0
+                                yaw[i] = 0
+                                thrust[i] = 0
+                            break
 
             elif val is 6 :
                 '''
