@@ -12,7 +12,7 @@ from NatNetClient import NatNetClient
 pos = [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]]
 
 # target position(Init position)
-target = [[0.084,1.500,0.083],[2,2,2],[3,3,3],[4,4,4],[5,5,5],[6,6,6],[7,7,7],[8,8,8],[9,9,9],[10,10,10]]
+target = [[0.19,1.00,0.17],[0.40,1.00,0.30],[3,1.00,3],[4,4,4],[5,5,5],[6,6,6],[7,7,7],[8,8,8],[9,9,9],[10,10,10]]
 
 # velocity
 velo_x = [0.0]*10
@@ -24,7 +24,7 @@ velo_pre_z = [0.0]*10
 
 #Input Channel you control 10 Drone
 #This sequence is the same Log sequence.
-ctrlDrone = ['55','11','0','0','0','0','0','0','0','0']
+ctrlDrone = ['80','90','50','0','0','0','0','0','0','0']
 DroneCnt = 1
 #
 log_thread = [0]*10
@@ -34,6 +34,10 @@ acc_zw = [0]*10
 hovering_thread = [0]*10
 run_chk = 0
 
+#
+first_check = [1]*10
+optical_flow = 0
+optical_pos = [0,0,0]
 #==============================================================
 #Get optitrack position
 
@@ -49,15 +53,34 @@ def receiveRigidBodyFrame( id, position, rotation ):
     rateTau = 0.0001
 
     global hovering_thread
-    #test
-    #global target
+    
+    global first_check
+    global target
+
+    if first_check[id-1] is 1 :
+        target[id-1][0] = position[0]
+        target[id-1][2] = position[2]
+        print(str(target[0][0]) +", " + str(target[0][2]))
+        first_check[id-1]=0
+
+    global optical_flow
+    if optical_flow is 1 :
+        optical_pos[0] = position[0]
+        optical_pos[1] = position[1]
+        optical_pos[2] = position[2]
 
     #print(position)
     #velo[id-1] = (math.sqrt((math.sqrt((position[0]-pos[id-1][0])**2 + (position[2]-pos[id-1][2])**2))**2 + (position[1]-pos[id-1][1])**2)) / (time.time()-velo_time[id-1])
+    #pos[id-1] = list(position)
     if run_chk is 1:
-        velo_x[id-1] = (position[0]-pos[id-1][0]) / 0.004 #(time.time()-velo_time[id-1])
-        velo_y[id-1] = (position[1]-pos[id-1][1]) / 0.004 # (time.time()-velo_time[id-1])
-        velo_z[id-1] = (position[2]-pos[id-1][2]) / 0.004 # (time.time()-velo_time[id-1])
+        #print(str(target[0][0]) +", " + str(target[0][2]))
+
+        if (pos[id-1][0] is not 0) and (pos[id-1][1] is not 0) and (pos[id-1][2] is not 0) :
+            velo_x[id-1] = (position[0]-pos[id-1][0]) / 0.004 #(time.time()-velo_time[id-1])
+            velo_y[id-1] = (position[1]-pos[id-1][1]) / 0.004 # (time.time()-velo_time[id-1])
+            velo_z[id-1] = (position[2]-pos[id-1][2]) / 0.004 # (time.time()-velo_time[id-1])
+
+        #print("\nvelo_x : {}\n velo_y : {}\n velo_z : {}\nvelo_pre_x : {}\nvelo_pre_y : {}\nvelo_pre_z : {}\nacc_zw : {}\n".format(velo_x[0],velo_y[0],velo_z[0],velo_pre_x[0],velo_pre_y[0],velo_pre_z[0],acc_zw[0]))
 
         velo_x[id-1] = ((rateTau * velo_pre_x[id-1]) + (0.004 * velo_x[id-1])) / (rateTau + 0.004)
         velo_y[id-1] = ((rateTau * velo_pre_y[id-1]) + (0.004 * velo_y[id-1])) / (rateTau + 0.004)
@@ -107,7 +130,7 @@ class _LogThread(Thread):
         while True:
             log = self._socket.recv_json()
             if log["event"] == "data":
-                acc_zw[0] = log["variables"]["acc.zw"]
+                acc_zw[0] = log["variables"]["acc.WZ"]
 
 class ctrlThread(Thread):
     def __init__(self,channel,idx, *args):
@@ -151,12 +174,12 @@ class pidCtrl():
             self.iLimitLow = -33.0
             self.dt = 0.004
             self.deriv = 0.0
-            self.kp = 3.0
+            self.kp = 1.0
             self.ki = 0.0
             self.kd = 0.0
-            self.v_kp = 10.0
-            self.v_ki = 0.0
-            self.v_kd = 0.0
+            self.v_kp = 30.0
+            self.v_ki = 30.0 #0.0
+            self.v_kd = 1.0
         #thrust gain
         else:
             self.iLimit = 33.0
@@ -169,9 +192,9 @@ class pidCtrl():
             self.v_kp = 6.0
             self.v_ki = 0.0
             self.v_kd = 0.0
-            self.a_kp = 3000.0
-            self.a_ki = 0.0
-            self.a_kd = 500.0
+            self.a_kp = 1500   #1500.0
+            self.a_ki = 3000  #3000.0
+            self.a_kd = 0.0
             self.prevError2 = 0.0
         self.num = num
         self.desired = 0.0
@@ -260,16 +283,20 @@ class Hovering(Thread):
 
         self.drone_idx = idx
 
-        self.pid_roll = pidCtrl(idx, 1)
-        self.pid_pitch = pidCtrl(idx, 1)
-        self.pid_yaw = pidCtrl(idx, 1)
+        #self.pid_roll = pidCtrl(idx, 1)
+        #self.pid_pitch = pidCtrl(idx, 1)
+        #self.pid_yaw = pidCtrl(idx, 1)
 
-        self.pid_thrust = pidCtrl(idx)
+        #self.pid_thrust = pidCtrl(idx)
 
+        self.pid_roll = pidCtrl(idx,1)
         self.pid_roll2 = pidCtrl(idx, 1)
+        self.pid_pitch = pidCtrl(idx, 1)
         self.pid_pitch2 = pidCtrl(idx, 1)
+        self.pid_yaw = pidCtrl(idx, 1)
         self.pid_yaw2 = pidCtrl(idx, 1)
 
+        self.pid_thrust = pidCtrl(idx)
         self.pid_thrust2 = pidCtrl(idx)
         self.pid_thrust3 = pidCtrl(idx)
 
@@ -303,6 +330,7 @@ class Hovering(Thread):
             (self.pid_yaw).ki = i
             (self.pid_yaw).kd = d
         elif sel is "thrust" :
+            (self.pid_thrust2).v_kp = p
             (self.pid_thrust3).a_kp = v_p
             (self.pid_thrust3).a_ki = v_i
             (self.pid_thrust3).a_kd = v_d
@@ -335,7 +363,7 @@ class Hovering(Thread):
         gap = (self.pid_thrust2).pidUpdate2(velo_y[self.drone_idx], gap)
         gap = (self.pid_thrust3).pidUpdate3(acc_zw[self.drone_idx], gap)
         #print(gap)
-        temp = int(37000 + gap)
+        temp = int(34000 + gap)
         if temp >= 62000:
             temp = 62000
         elif temp <= 0:
@@ -371,7 +399,7 @@ class connectThread(Thread):
 def land():
     global target
     for i in range(10):
-        target[i][1] = 0.10
+        target[i][1] = 0.07
 
 def findChanidx(channel = ""):
     for i in range(10) :
@@ -380,29 +408,118 @@ def findChanidx(channel = ""):
     return -1;
 
 # Circle      DroneNum, radius
-def sequence_1(num = 0, r = 0):
+def sequence_1(num = 0, r = 0.0):
+    global target
+    global pos
     #x^2 + z^2 = r^2
-    init_x = pos[num][0]
-    init_z = pos[num][2]
+    #init_x = pos[num][0]
+    #init_z = pos[num][2]
 
+    init_x = 0.0
+    init_z = 0.0
+
+    init_x = target[num][0]
+    print(init_z)
+    print(r)
+    print(target[num][0])
+    init_z = math.sqrt(r**2 - target[num][0]**2)
+    print(init_z)
+    print(r)
+    print(target[num][0])
+
+    prove = 0
+    minus = 1
+
+    if pos[num][2] > 0:
+        prove = 0
+    else:
+        prove = 1
+    
     while True:
         # calc Z    z  =       sqrt(r^2 - x^2)
-        target[num][2] = math.sqrt(r**2 - target[num][0]**2)
+        if target[num][0] >= r:
+            target[num][0] = r
+            prove = 0
+        elif target[num][0] <= -r:
+            target[num][0] = -r
+            prove = 1
+        
+        target[num][2] = math.sqrt(r**2 - target[num][0]**2) * minus
 
+        print("t_x : " + str(target[num][0]) + " t_y : " + str(target[num][2]))
         while True:
             # Check whether really move or not
-            if ((target[num][0]-0.010) < pos[num][0]) and (pos[num][0] < (target[num][0]+0.010)) and ((target[num][2]-0.010) < pos[num][2]) and (pos[num][2] < (target[num][2]+0.010)) :
+            #print("x : " + str(target[num][0]) + " z : " + str(target[num][2]))
+            #print("pos x : " + str(pos[num][0]) + " pos z : " + str(pos[num][2]))
+            '''
+            time.sleep(0.004)
+            if ((target[num][0]-0.020) < pos[num][0]) and (pos[num][0] < (target[num][0]+0.020)) and ((target[num][2]-0.020) < pos[num][2]) and (pos[num][2] < (target[num][2]+0.020)) :
                 # Check up and down based on center.
-                if target[num][2] > 0:
-                    target[num][0] += 0.050
-                elif target[num][2] < 0:
-                    target[num][2] -= 0.050
+                if pos[num][2] > 0:
+                    target[num][0] -= 0.06
+                    minus = 1
+                elif pos[num][2] < 0:
+                    target[num][0] += 0.06
+                    minus = -1
                 break
-
-        # Check one round
-        if (init_x-0.010) < pos[num][0] and pos[num][0] < (init_x+0.010) and (init_z-0.010) < pos[num][2] and pos[num][2] < (init_z+0.010):
+            '''
+            time.sleep(0.2)
+            if prove is 0:
+                target[num][0] -= 0.06
+                minus = 1
+            elif prove is 1:
+                target[num][0] += 0.06
+                minus = -1
             break
+        # Check one round
+        #if (init_x-0.020) < pos[num][0] and pos[num][0] < (init_x+0.020) and (init_z-0.020) < pos[num][2] and pos[num][2] < (init_z+0.020):
+        #    break
 
+
+def init_value():
+    global pos
+    global velo_x
+    global velo_y
+    global velo_z
+    global velo_pre_x
+    global velo_pre_y
+    global velo_pre_z
+    global acc_zw
+    for i in range(10):
+        for j in range(3):
+            pos[i][j] = 0.0
+        velo_x[i] = 0.0
+        velo_y[i] = 0.0
+        velo_z[i] = 0.0
+        velo_pre_x[i] = 0.0
+        velo_pre_y[i] = 0.0
+        velo_pre_z[i] = 0.0
+        acc_zw[i] = 0.0
+    
+def print_value():
+    global velo_x
+    global velo_y
+    global velo_z
+    global velo_pre_x
+    global velo_pre_y
+    global velo_pre_z
+    global acc_zw
+    print("velo_x : {}\n velo_y : {}\n velo_z : {}\nvelo_pre_x : {}\nvelo_pre_y : {}\nvelo_pre_z : {}\nacc_zw : {}".format(velo_x[0],velo_y[0],velo_z[0],velo_pre_x[0],velo_pre_y[0],velo_pre_z[0],acc_zw[0]))
+
+def SetTarget(num = 0, x = 0.0, y = 0.0, z = 0.0):
+    global target
+    target[num][0] = x
+    target[num][1] = y
+    target[num][2] = z
+
+def location_debug():
+    global target
+    global pos
+    print("target : " + str(target[0][0]) + " " + str(target[0][1]) + " " + str(target[0][2]))
+    print("pos : " + str(pos[0][0]) + " " + str(pos[0][1]) + " " + str(pos[0][2]))
+    global pitch
+    global roll
+    print("pitch : " + str(pitch[0]) + " " + "roll : " + str(roll[0]))
 
 #time.sleep(1)
 #print(pos[0])
@@ -410,6 +527,8 @@ def sequence_1(num = 0, r = 0):
 
 print("If you don't know command, Enther the 'help'")
 while True:
+    global DroneCnt
+
     sel = str(input("<<"))
     if sel == "connect" :
         channel = str(input("Channel input :"))
@@ -444,12 +563,12 @@ while True:
         val = int(input("Input:"))
         if val is 1: 
             cT = [0]*10
-            for i in range(Drone_Cnt):
+            for i in range(DroneCnt):
                 cT[i] = connectThread(ctrlDrone[i], i)
                 cT[i].start()
 
         elif val is 2:
-            for i in range(Drone_Cnt):
+            for i in range(DroneCnt):
                 error = client.Connect(ctrlDrone[i])
                 if error == -1:
                     print("connect fail!!!")
@@ -457,8 +576,8 @@ while True:
                 ctrlthread[connCnt] = ctrlThread(ctrlDrone[i], connCnt)
                 ctrlthread[connCnt].start()
 
-                client.setLog(channel)
-                log_thread[connCnt] = _LogThread(client.getLog(channel))
+                client.setLog(ctrlDrone[i])
+                log_thread[connCnt] = _LogThread(client.getLog(ctrlDrone[i]))
                 log_thread[connCnt].start()
 
                 channelSeq[connCnt] = ctrlDrone[i]
@@ -572,20 +691,63 @@ while True:
 
             elif val is 5 :
                 global run_chk
-                for i in range(Drone_Cnt):
+                global target
+                global thrust
+                for i in range(DroneCnt):
                     hovering_thread[i] = Hovering(i)
 
                 while True:
                     str(input("Start any key"))
+                    #thrust[0] = 50000
+                    #time.sleep(0.5)
+
                     run_chk = 1
+                    target[0][1] = 1.0
                     while True:
-                        print("1. land 2. Fly off")
+                        print("1. Move 2. land 3. Fly off")
                         i = str(input("Input : "))
                         if i is '1':
-                            land()
+                            while True:
+                                print("1. left 2. right 3. front 4. back 5.stop 6.circle 7.location_debug 8.setTarget")
+                                j = str(input("input : "))
+                                if j is '1':
+                                    print("left")
+                                    SetTarget(0, target[0][0]-0.30, target[0][1], target[0][2])
+                                    SetTarget(1, target[1][0]-0.30, target[1][1], target[1][2])
+                                    SetTarget(2, target[2][0]-0.30, target[2][1], target[2][2])
+                                elif j is '2':
+                                    print("right")
+                                    SetTarget(0, target[0][0]+0.30, target[0][1], target[0][2])
+                                    SetTarget(1, target[1][0]+0.30, target[1][1], target[1][2])
+                                    SetTarget(2, target[2][0]+0.30, target[2][1], target[2][2])
+                                elif j is '3':
+                                    print("front")
+                                    SetTarget(0, target[0][0], target[0][1], target[0][2]+0.30)
+                                    SetTarget(1, target[1][0], target[1][1], target[1][2]+0.30)
+                                    SetTarget(2, target[2][0], target[2][1], target[2][2]+0.30)
+                                elif j is '4':
+                                    print("back")
+                                    SetTarget(0, target[0][0], target[0][1], target[0][2]-0.30)
+                                    SetTarget(1, target[1][0], target[1][1], target[1][2]-0.30)
+                                    SetTarget(2, target[2][0], target[2][1], target[2][2]-0.30)
+                                elif j is '5':
+                                    print("exit")
+                                    break
+                                elif j is '6':
+                                    sequence_1(0,0.60)
+                                elif j is '7':
+                                    location_debug()
+                                elif j is '8':
+                                    x = float(input("X : "))
+                                    y = float(input("Y : "))
+                                    z = float(input("Z : "))
+                                    SetTarget(0,x,y,z)
                         elif i is '2':
+                            land()
+                        elif i is '3':
                             run_chk = 0
-                            for i in range(Drone_Cnt):
+                            #init_value()
+                            for i in range(DroneCnt):
                                 pitch[i] = 0
                                 roll[i] = 0
                                 yaw[i] = 0
@@ -644,12 +806,14 @@ while True:
                             #hovering_thread[0] = None
 
             elif val is 7 :
+                '''
                 channel = str(input("Channel input : "))
                 ctrlthread[0] = ctrlThread(channel, 0)
                 client.test(channel)
                 ctrlthread[0].start()
 
                 channelSeq[0] = channel
+                '''
                 hovering_thread[0] = Hovering(0)
                 
                 #Test
@@ -664,46 +828,69 @@ while True:
 
                     hovering_thread[0] = Hovering(0)
                     hovering_thread[0].change_gain(p,v_p,v_i,v_d,"pitch")
-                    #hovering_thread[0].change_gain(v_p,v_i,v_d,"thrust")
+                    #hovering_thread[0].change_gain(p,v_p,v_i,v_d,"thrust")
 
-
+                    target[0][1] = 1.0
                     run_chk = 1
                     #hovering_thread[0].start()
-
-                    a = str(input("If you want to stop, Enter any key"))
-                    run_chk = 0
-                    #hovering_thread[0].stop()
-                    pitch[0] = 0
-                    roll[0] = 0
-                    yaw[0] = 0
-                    thrust[0] = 0
-                    #hovering_thread[0] = None
+                    while True:
+                        print("1. left 2. right 3.circle 4.location_debug 5.stop")
+                        j = str(input("input : "))
+                        if j is '1':
+                            print("left")
+                            SetTarget(0, target[0][0]-0.30, target[0][1], target[0][2])
+                            SetTarget(1, target[1][0]-0.30, target[1][1], target[1][2])
+                            SetTarget(2, target[2][0]-0.30, target[2][1], target[2][2])
+                        elif j is '2':
+                            print("right")
+                            SetTarget(0, target[0][0]+0.30, target[0][1], target[0][2])
+                            SetTarget(1, target[1][0]+0.30, target[1][1], target[1][2])
+                            SetTarget(2, target[2][0]+0.30, target[2][1], target[2][2])
+                        elif j is '3':
+                            sequence_1(0,0.30)
+                        elif j is '4':
+                            location_debug()
+                        elif j is '5':
+                            land()
+                            str(input("enter"))
+                            run_chk = 0
+                            #init_value()
+                            #hovering_thread[0].stop()
+                            pitch[0] = 0
+                            roll[0] = 0
+                            yaw[0] = 0
+                            thrust[0] = 0
+                            #hovering_thread[0] = None
+                            break
 
             elif val is 8 :
-                channel = str(input("Channel input : "))
-                ctrlthread[0] = ctrlThread(channel, 0)
-                client.test(channel)
-                ctrlthread[0].start()
-
-                channelSeq[0] = channel
+                global run_chk
+                global target
+                global pos
+                global optical_flow
+                global optical_pos
 
                 hovering_thread[0] = Hovering(0)
                 while True:
-                    p = float(input("input p gain:"))
-                    i = float(input("input i gain:"))
-                    d = float(input("input d gain:"))
-                    hovering_thread[0].change_gain(p,i,d,"roll")
-                    hovering_thread[0].change_gain(p,i,d,"pitch")
-                    hovering_thread[0].change_gain(p,i,d,"yaw")
+                    optical_flow = 1
+                    a = str(input("If you want to start, Enter any key"))
+                    hovering_thread[0] = Hovering(0)
+                    run_chk = 1
+                    #optical_flow = 1
+                    target[0][0] = optical_pos[0]
+                    target[0][1] = optical_pos[1]
+                    target[0][2] = optical_pos[2]
 
-                    hovering_thread[0].start()
-
+                    print(str(target[0][0]) + " " + str(target[0][1]) + " " + str(target[0][2]))
+                    
                     a = str(input("If you want to stop, Enter any key"))
-                    hovering_thread[0].stop()
+                    run_chk = 0
+
                     pitch[0] = 0
                     roll[0] = 0
                     yaw[0] = 0
                     thrust[0] = 0
+                    
 
     elif sel == "exit" :
         sys.exit(1)
