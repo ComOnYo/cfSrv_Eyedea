@@ -12,7 +12,7 @@ from NatNetClient import NatNetClient
 pos = [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]]
 
 # target position(Init position)
-target = [[0.19,1.00,0.17],[0.40,1.00,0.30],[3,1.00,3],[4,4,4],[5,5,5],[6,6,6],[7,7,7],[8,8,8],[9,9,9],[10,10,10]]
+target = [[0.07,1.00,0.0],[0.40,1.00,0.30],[3,1.00,3],[4,4,4],[5,5,5],[6,6,6],[7,7,7],[8,8,8],[9,9,9],[10,10,10]]
 
 # velocity
 velo_x = [0.0]*10
@@ -24,7 +24,7 @@ velo_pre_z = [0.0]*10
 
 #Input Channel you control 10 Drone
 #This sequence is the same Log sequence.
-ctrlDrone = ['80','90','50','0','0','0','0','0','0','0']
+ctrlDrone = ['61','61','50','0','0','0','0','0','0','0']
 DroneCnt = 1
 #
 log_thread = [0]*10
@@ -57,12 +57,13 @@ def receiveRigidBodyFrame( id, position, rotation ):
     global first_check
     global target
 
+    '''
     if first_check[id-1] is 1 :
         target[id-1][0] = position[0]
         target[id-1][2] = position[2]
         print(str(target[0][0]) +", " + str(target[0][2]))
         first_check[id-1]=0
-
+    '''
     global optical_flow
     if optical_flow is 1 :
         optical_pos[0] = position[0]
@@ -120,17 +121,34 @@ connCnt = 0
 
 log_thread = [0]*10
 
+ultra_pos = [0,0,0]
+class ultraThread(Thread):
+    def __init__(self, chk, *args):
+        super(ultraThread, self).__init__(*args)
+        self.chk = chk
+        global pos
+    def run(self):
+        while True:
+            if self.chk == 0:
+                ultra_pos[1] = pos[0][1]
+                time.sleep(0.1)
+            elif self.chk == 1:
+                ultra_pos[0] = pos[0][0]
+                ultra_pos[2] = pos[0][2]
+                time.sleep(0.03)
+
 class _LogThread(Thread):
-    def __init__(self, socket, *args):
+    def __init__(self, socket, num, *args):
         super(_LogThread, self).__init__(*args)
         self._socket = socket
+        self.num = num
         global acc_zw
-        self.zw = 0.0
+        #self.zw = 0.0
     def run(self):
         while True:
             log = self._socket.recv_json()
             if log["event"] == "data":
-                acc_zw[0] = log["variables"]["acc.WZ"]
+                acc_zw[self.num] = log["variables"]["acc.z"]
 
 class ctrlThread(Thread):
     def __init__(self,channel,idx, *args):
@@ -179,7 +197,7 @@ class pidCtrl():
             self.kd = 0.0
             self.v_kp = 30.0
             self.v_ki = 30.0 #0.0
-            self.v_kd = 1.0
+            self.v_kd = 1.0 #1.0
         #thrust gain
         else:
             self.iLimit = 33.0
@@ -342,32 +360,43 @@ class Hovering(Thread):
         #        break
 
         #roll control                                        z   t_z
+        #gap = (self.pid_roll).pidUpdate(float(ultra_pos[2]), 2)
         gap = (self.pid_roll).pidUpdate(float(pos[self.drone_idx][2]), 2)
         gap = (self.pid_roll2).pidUpdate2(velo_z[self.drone_idx], gap)
         #print(gap)
+        if gap >= 10.0:
+            gap = 10.0
+        elif gap <= -10.0:
+            gap = -10.0
         roll[self.drone_idx] = -gap
-        #print("roll gap:" + str(gap))
+        #print("roll gap:" + str(-gap))
 
         #pitch control                                       x   t_x
+        #gap = (self.pid_pitch).pidUpdate(float(ultra_pos[0]), 0)
         gap = (self.pid_pitch).pidUpdate(float(pos[self.drone_idx][0]), 0)
         gap = (self.pid_pitch2).pidUpdate2(velo_x[self.drone_idx], gap)
-        #print(gap)
+        if gap >= 10.0:
+            gap = 10.0
+        elif gap <= -10.0:
+            gap = -10.0
+        #print("pitch " + str(-gap))
         pitch[self.drone_idx] = -gap
 
         #yaw control
 
         #thrust control
+        #gap = (self.pid_thrust).pidUpdate(float(ultra_pos[1]), 1)
         gap = (self.pid_thrust).pidUpdate(float(pos[self.drone_idx][1]), 1)
         #print(gap)
         #print("")
         gap = (self.pid_thrust2).pidUpdate2(velo_y[self.drone_idx], gap)
         gap = (self.pid_thrust3).pidUpdate3(acc_zw[self.drone_idx], gap)
-        #print(gap)
-        temp = int(34000 + gap)
+        temp = int(37000 + gap)
         if temp >= 62000:
             temp = 62000
         elif temp <= 0:
             temp = 0
+        #print(temp)
         thrust[self.drone_idx] = temp
 
         #time.sleep(0.01)
@@ -408,72 +437,89 @@ def findChanidx(channel = ""):
     return -1;
 
 # Circle      DroneNum, radius
-def sequence_1(num = 0, r = 0.0):
-    global target
-    global pos
-    #x^2 + z^2 = r^2
-    #init_x = pos[num][0]
-    #init_z = pos[num][2]
+class sequence_1(Thread):
+    def __init__(self, num, r, *args):
+        super(sequence_1, self).__init__(*args)
+        self.num = num
+        self.r = r
+        self.sp = False
 
-    init_x = 0.0
-    init_z = 0.0
+    def stop(self):
+        self.sp = True
+        try:
+            self.join()
+        except Exception:
+            pass
 
-    init_x = target[num][0]
-    print(init_z)
-    print(r)
-    print(target[num][0])
-    init_z = math.sqrt(r**2 - target[num][0]**2)
-    print(init_z)
-    print(r)
-    print(target[num][0])
+    def run(self):
+        global target
+        global pos
+        #x^2 + z^2 = r^2
+        #init_x = pos[num][0]
+        #init_z = pos[num][2]
 
-    prove = 0
-    minus = 1
+        init_x = 0.0
+        init_z = 0.0
 
-    if pos[num][2] > 0:
-        prove = 0
-    else:
-        prove = 1
+        init_x = target[self.num][0]
+        print(init_z)
+        print(self.r)
+        print(target[self.num][0])
+        init_z = math.sqrt(self.r**2 - target[self.num][0]**2)
+        print(init_z)
+        print(self.r)
+        print(target[self.num][0])
     
-    while True:
-        # calc Z    z  =       sqrt(r^2 - x^2)
-        if target[num][0] >= r:
-            target[num][0] = r
+        prove = 0
+        minus = 1
+
+        if pos[self.num][2] > 0:
             prove = 0
-        elif target[num][0] <= -r:
-            target[num][0] = -r
+        else:
             prove = 1
         
-        target[num][2] = math.sqrt(r**2 - target[num][0]**2) * minus
-
-        print("t_x : " + str(target[num][0]) + " t_y : " + str(target[num][2]))
         while True:
-            # Check whether really move or not
-            #print("x : " + str(target[num][0]) + " z : " + str(target[num][2]))
-            #print("pos x : " + str(pos[num][0]) + " pos z : " + str(pos[num][2]))
-            '''
-            time.sleep(0.004)
-            if ((target[num][0]-0.020) < pos[num][0]) and (pos[num][0] < (target[num][0]+0.020)) and ((target[num][2]-0.020) < pos[num][2]) and (pos[num][2] < (target[num][2]+0.020)) :
-                # Check up and down based on center.
-                if pos[num][2] > 0:
-                    target[num][0] -= 0.06
+            if (self.sp):
+                break
+            
+            # calc Z    z  =       sqrt(r^2 - x^2)
+            if target[self.num][0] >= self.r:
+                target[self.num][0] = self.r
+                prove = 0
+            elif target[self.num][0] <= -self.r:
+                target[self.num][0] = -self.r
+                prove = 1
+        
+            target[self.num][2] = math.sqrt(self.r**2 - target[self.num][0]**2) * minus
+
+            #print("t_x : " + str(target[self.num][0]) + " t_y : " + str(target[self.num][2]))
+            while True:
+                # Check whether really move or not
+                #print("x : " + str(target[num][0]) + " z : " + str(target[num][2]))
+                #print("pos x : " + str(pos[num][0]) + " pos z : " + str(pos[num][2]))
+                '''
+                time.sleep(0.004)
+                if ((target[num][0]-0.020) < pos[num][0]) and (pos[num][0] < (target[num][0]+0.020)) and ((target[num][2]-0.020) < pos[num][2]) and (pos[num][2] < (target[num][2]+0.020)) :
+                    # Check up and down based on center.
+                    if pos[num][2] > 0:
+                        target[num][0] -= 0.06
+                        minus = 1
+                    elif pos[num][2] < 0:
+                        target[num][0] += 0.06
+                        minus = -1
+                    break
+                '''
+                time.sleep(0.1)
+                if prove is 0:
+                    target[self.num][0] -= 0.03
                     minus = 1
-                elif pos[num][2] < 0:
-                    target[num][0] += 0.06
+                elif prove is 1:
+                    target[self.num][0] += 0.03
                     minus = -1
                 break
-            '''
-            time.sleep(0.2)
-            if prove is 0:
-                target[num][0] -= 0.06
-                minus = 1
-            elif prove is 1:
-                target[num][0] += 0.06
-                minus = -1
-            break
-        # Check one round
-        #if (init_x-0.020) < pos[num][0] and pos[num][0] < (init_x+0.020) and (init_z-0.020) < pos[num][2] and pos[num][2] < (init_z+0.020):
-        #    break
+            # Check one round
+            #if (init_x-0.020) < pos[num][0] and pos[num][0] < (init_x+0.020) and (init_z-0.020) < pos[num][2] and pos[num][2] < (init_z+0.020):
+            #    break
 
 
 def init_value():
@@ -541,7 +587,7 @@ while True:
         channelSeq[connCnt] = channel
 
         client.setLog(channel)
-        log_thread[connCnt] = _LogThread(client.getLog(channel))
+        log_thread[connCnt] = _LogThread(client.getLog(channel), connCnt)
         log_thread[connCnt].start()
 
         connCnt+=1
@@ -577,7 +623,7 @@ while True:
                 ctrlthread[connCnt].start()
 
                 client.setLog(ctrlDrone[i])
-                log_thread[connCnt] = _LogThread(client.getLog(ctrlDrone[i]))
+                log_thread[connCnt] = _LogThread(client.getLog(ctrlDrone[i]), i)
                 log_thread[connCnt].start()
 
                 channelSeq[connCnt] = ctrlDrone[i]
@@ -696,13 +742,19 @@ while True:
                 for i in range(DroneCnt):
                     hovering_thread[i] = Hovering(i)
 
+                #a = ultraThread(0)
+                #b = ultraThread(1)
+                #a.start()
+                #b.start()
+
                 while True:
                     str(input("Start any key"))
                     #thrust[0] = 50000
                     #time.sleep(0.5)
 
                     run_chk = 1
-                    target[0][1] = 1.0
+                    target[0][1] = 1.2
+                    print(str(target[0][0]) + " " + str(target[0][1]) + " " + str(target[0][2]))
                     while True:
                         print("1. Move 2. land 3. Fly off")
                         i = str(input("Input : "))
@@ -734,7 +786,13 @@ while True:
                                     print("exit")
                                     break
                                 elif j is '6':
-                                    sequence_1(0,0.60)
+                                    circle1 = sequence_1(0,0.60)
+                                    circle2 = sequence_1(1,0.60)
+                                    circle1.start()
+                                    circle2.start()
+                                    str(input("If you want to stop, Enter any key"))
+                                    circle1.stop()
+                                    circle2.stop()
                                 elif j is '7':
                                     location_debug()
                                 elif j is '8':

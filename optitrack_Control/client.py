@@ -146,3 +146,16 @@ def test(channel=""):
     ctrlSocket[0].connect(command.ServerAddr("ctrl", '0'))
     channelSeq[0] = channel
 
+def setParam(channel="", name="", value=0.0):
+    idx = findChanidx(channel)
+    if idx == -1 :
+        print("channel is not exist")
+        return
+
+    cmdSocket[idx].send_json(command.controlParam(name,value))
+    resp = cmdSocket[idx].recv_json()
+    if resp["status"] == 0:
+        a=1
+        #print("done!")
+    else:
+        print("fail!")

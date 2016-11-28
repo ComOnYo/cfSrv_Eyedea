@@ -41,6 +41,15 @@ def controlJson(roll=0.0,pitch=0.0,yaw=0.0,thrust=0):
 #print(send)
     return send
 
+def controlParam(name="", value=0.0):
+    param = {
+        "version": 1,
+        "cmd" : "param",
+        "name" : name,
+        "value" : value
+    }
+    return param
+ 
 log_create = {
     "version" : 1,
     "cmd" : "log",
@@ -54,7 +63,7 @@ log_create = {
         #"stabilizer.pitch",
         #"stabilizer.yaw",
         #"stabilizer.thrust",
-        "acc.WZ"
+        "acc.z"
     ]
 }
 
@@ -78,4 +87,5 @@ log_delete = {
     "action" : "delete",
     "name" : "stabilizer block"
 }
+
 

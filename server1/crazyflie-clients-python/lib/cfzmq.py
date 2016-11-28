@@ -279,7 +279,7 @@ class _SrvThread(Thread):
             # Wait for the command
             cmd = self._socket.recv_json()
             response = {"version": 1}
-            logger.info("Got command {}".format(cmd))
+            #logger.info("Got command {}".format(cmd))
             if cmd["cmd"] == "scan":
                 response = self._handle_scanning()
             elif cmd["cmd"] == "connect":
