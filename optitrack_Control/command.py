@@ -63,7 +63,8 @@ log_create = {
         #"stabilizer.pitch",
         #"stabilizer.yaw",
         #"stabilizer.thrust",
-        "acc.z"
+        "gyro.z",
+        "acc.WZ"
     ]
 }
 

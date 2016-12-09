@@ -13,7 +13,7 @@ from NatNetClient import NatNetClient
 pos = [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]]
 
 # target position(Init position)
-target = [[0.00,0.50,0.00],[0.00,1.00,0.00],[0.00,1.00,0.00],[4,4,4],[5,5,5],[6,6,6],[7,7,7],[8,8,8],[9,9,9],[10,10,10]]
+target = [[0.34,1.00,0.12],[0.40,1.00,0.30],[3,1.00,3],[4,4,4],[5,5,5],[6,6,6],[7,7,7],[8,8,8],[9,9,9],[10,10,10]]
 
 # velocity
 velo_x = [0.0]*10
@@ -42,7 +42,6 @@ optical_pos = [0,0,0]
 #==============================================================
 #Get optitrack position
 
-yaw_target = [2.0]*10
 yaw_value = [0.0]*10
 gyro_z = [0.0]*10
 def receiveRigidBodyFrame( id, position, rotation ):
@@ -84,25 +83,20 @@ def receiveRigidBodyFrame( id, position, rotation ):
     #temp = math.atan2(2.0*(qy*qz+qw*qx),qw*qw-qx*qx-qy*qy+qz*qz)
     temp = math.atan2(2.0*(qx*qz+qw*qy),qw*qw-qx*qx-qy*qy+qz*qz)
     temp2 = temp * 180.0 /  3.141592
-
-    if temp2 < 0:
-         yaw_value[id-1] = temp2*(-1)
-    else:
-         yaw_value[id-1] = temp2*(-1)
     #temp2 = 0.0
-#    if temp2 < 0:
-#        yaw_value[id-1] = temp2+360
-#    else:
-#        yaw_value[id-1] = temp2
+    if temp2 < 0:
+        yaw_value[id-1] = temp2+360
+    else:
+        yaw_value[id-1] = temp2
 
-#    if 0 <= yaw_value[id-1] and yaw_value[id-1] < 180:
-#        yaw_value[id-1] += 180
-#    else :
-#        yaw_value[id-1] -= 180
-
-#    print(yaw_value[id-1])
+    if 0 <= yaw_value[id-1] and yaw_value[id-1] < 180:
+        yaw_value[id-1] += 180
+    else :
+        yaw_value[id-1] -= 180
+    #print(yaw_value[id-1])
 
     #print(position)
+    #velo[id-1] = (math.sqrt((math.sqrt((position[0]-pos[id-1][0])**2 + (position[2]-pos[id-1][2])**2))**2 + (position[1]-pos[id-1][1])**2)) / (time.time()-velo_time[id-1])
     #pos[id-1] = list(position)
     if run_chk is 1:
         #print(str(target[0][0]) +", " + str(target[0][2]))
@@ -224,12 +218,12 @@ class pidCtrl():
             self.iLimitLow = -33.0
             self.dt = 0.004
             self.deriv = 0.0
-            self.kp = 5	#small 1.0 / big 1
+            self.kp = 1	#small 1.0 / big 1
             self.ki = 0.0
             self.kd = 0.0
-            self.v_kp = 25.0  #40.0 #20 /10.0 small 30.0 / big 50.0
-            self.v_ki = 10.0 #20.0 #30 /21.0 small 30.0 / big 50.0
-            self.v_kd = 3.0 #1.0 #6 /4.0 small 1.0 / big 5.0
+            self.v_kp = 30.0 #20 /10.0 small 30.0 / big 50.0
+            self.v_ki = 30.0 #30 /21.0 small 30.0 / big 50.0
+            self.v_kd = 1.0 #6 /4.0 small 1.0 / big 5.0
         #yaw gain
         elif sel is 2:
             self.iLimit = 33.0
@@ -237,11 +231,11 @@ class pidCtrl():
             self.dt = 0.004
             self.deriv = 0.0
 
-            self.y_kp = 5
+            self.y_kp = 0.2
             self.y_ki = 0
             self.y_kd = 0
-            self.yv_kp = 0.5
-            self.yv_ki = 0.5
+            self.yv_kp = 1
+            self.yv_ki = 0
             self.yv_kd = 0
         #thrust gain
         else:
@@ -376,8 +370,13 @@ class Hovering(Thread):
         global acc_zw
 
         global yaw_value
-        global yaw_target
         self.drone_idx = idx
+
+        #self.pid_roll = pidCtrl(idx, 1)
+        #self.pid_pitch = pidCtrl(idx, 1)
+        #self.pid_yaw = pidCtrl(idx, 1)
+
+        #self.pid_thrust = pidCtrl(idx)
 
         self.pid_roll = pidCtrl(idx,1)
         self.pid_roll2 = pidCtrl(idx, 1)
@@ -432,58 +431,51 @@ class Hovering(Thread):
         #        break
 
         #roll control                                        z   t_z
-        #print("z : " + str(roll_value), end=" ")
-        gap = (self.pid_roll).pidUpdate(float(pos[self.drone_idx][2]), 2)
-        #print(" roll error : " + str((self.pid_roll).error))
-        gap = (self.pid_roll2).pidUpdate2(velo_z[self.drone_idx], gap)
-        
-        #print(gap)
-        if gap >= 40.0:
-            gap = 40.0
-        elif gap <= -40.0:
-            gap = -40.0
-        roll_gap = gap
+        #gap = (self.pid_roll).pidUpdate(float(ultra_pos[2]), 2)
+        roll_value = pos[self.drone_idx][0] * math.cos(yaw_value[self.drone_idx]*3.141592/180) - pos[self.drone_idx][2] * math.sin(yaw_value[self.drone_idx]*3.141592/180)
 
-        #roll[self.drone_idx] = -gap
+        print("roll : " + str(roll_value))
+        #gap = (self.pid_roll).pidUpdate(float(pos[self.drone_idx][2]), 2)
+        gap = (self.pid_roll).pidUpdate(roll_value, 2)
+        gap = (self.pid_roll2).pidUpdate2(velo_z[self.drone_idx], gap)
+        #print(gap)
+        if gap >= 10.0:
+            gap = 10.0
+        elif gap <= -10.0:
+            gap = -10.0
+        roll[self.drone_idx] = -gap
         #print("roll gap:" + str(-gap))
 
         #pitch control                                       x   t_x
-        #print("x : " + str(pitch_value), end=" ")
-        gap = (self.pid_pitch).pidUpdate(float(pos[self.drone_idx][0]), 0)
-        #print(" pitch error : " + str((self.pid_pitch).error))
+        #gap = (self.pid_pitch).pidUpdate(float(ultra_pos[0]), 0)
+        pitch_value = pos[self.drone_idx][0] * math.sin(yaw_value[self.drone_idx]*3.141592/180) + pos[self.drone_idx][2] * math.cos(yaw_value[self.drone_idx]*3.141592/180)
+        print("pitch : " + str(pitch_value))
+        #gap = (self.pid_pitch).pidUpdate(float(pos[self.drone_idx][0]), 0)
+        gap = (self.pid_pitch).pidUpdate(pitch_value, 0)
         gap = (self.pid_pitch2).pidUpdate2(velo_x[self.drone_idx], gap)
-        #print(" pitch error : " + str((self.pid_pitch2).error) + " " + str((self.pid_pitch2).integ) + " " + str((self.pid_pitch2).deriv))
-        if gap >= 40.0:
-            gap = 40.0
-        elif gap <= -40.0:
-            gap = -40.0
-        pitch_gap = gap
-
+        if gap >= 10.0:
+            gap = 10.0
+        elif gap <= -10.0:
+            gap = -10.0
         #print("pitch " + str(-gap))
-        #pitch[self.drone_idx] = -gap
-        
-        roll[self.drone_idx] = -(roll_gap * math.cos(yaw_value[self.drone_idx]*3.141592/180) - pitch_gap * math.sin(yaw_value[self.drone_idx]*3.141592/180))
-        pitch[self.drone_idx] = -(pitch_gap * math.cos(yaw_value[self.drone_idx]*3.141592/180) + roll_gap * math.sin(yaw_value[self.drone_idx]*3.141592/180))
-
-        #print("roll :" + str(roll[self.drone_idx]), end = " ")
-        #print("pitch :" + str(pitch[self.drone_idx]))
+        pitch[self.drone_idx] = -gap
 
         #yaw control
-        #print("input : " + str(yaw_value[self.drone_idx]) + " target : " + str(yaw_target[self.drone_idx]), end=" ")
-        gap = (self.pid_yaw).pidUpdate_yaw(float(yaw_value[self.drone_idx]), yaw_target[self.drone_idx], 0)
-
-        #print(" gyro : " + str(gyro_z[self.drone_idx]) + " gap : " + str(gap), end="")
+        gap = (self.pid_yaw).pidUpdate_yaw(float(yaw_value[self.drone_idx]), 0.0, 0)
         gap = (self.pid_yaw2).pidUpdate_yaw(gyro_z[self.drone_idx], gap, 1)
-        if gap >= 180.0:
-            gap = 180.0
-        elif gap <= -180.0:
-            gap = -180.0
-        #print("yaw " + str(gap))
-        yaw[self.drone_idx] = gap
+        if gap >= 4.0:
+            gap = 4.0
+        elif gap <= -4.0:
+            gap = -4.0
+        #print("yaw " + str(-gap))
+        yaw[self.drone_idx] = -gap
 
         #thrust control
+        #gap = (self.pid_thrust).pidUpdate(float(ultra_pos[1]), 1)
         gap = (self.pid_thrust).pidUpdate(float(pos[self.drone_idx][1]), 1)
+        #print("")
         gap = (self.pid_thrust2).pidUpdate2(velo_y[self.drone_idx], gap)
+        #print(gap)
         gap = (self.pid_thrust3).pidUpdate3(acc_zw[self.drone_idx], gap)
         #print(acc_zw[self.drone_idx])
         #gap = (self.pid_thrust3).pidUpdate3(0.0, gap)
@@ -495,6 +487,8 @@ class Hovering(Thread):
             temp = 0
         #print(temp)
         thrust[self.drone_idx] = temp
+
+        #time.sleep(0.01)
 
 
 #For concurrently connect
@@ -523,7 +517,7 @@ class connectThread(Thread):
 def land():
     global target
     for i in range(10):
-        target[i][1] = 0.01
+        target[i][1] = 0.07
 
 def findChanidx(channel = ""):
     for i in range(10) :
@@ -533,17 +527,12 @@ def findChanidx(channel = ""):
 
 # Circle      DroneNum, radius
 class sequence_1(Thread):
-    def __init__(self, num, r, psi, *args):
+    def __init__(self, num, r, *args):
         super(sequence_1, self).__init__(*args)
         self.num = num
         self.r = r
-        self.cnt = 0.0
         self.sp = False
 
-        self.rotation_cnt = 2 * 360.0
-        self.psi = psi
-        self.x = 0.0
-        self.y = 0.0
     def stop(self):
         self.sp = True
         try:
@@ -558,35 +547,6 @@ class sequence_1(Thread):
         #init_x = pos[num][0]
         #init_z = pos[num][2]
 
-        self.x = pos[self.num][0]
-        self.z = pos[self.num][2]
-
-        chk = 0
-        while True:
-            if (self.sp):
-                break
-
-            #target[self.num][0] = self.x + self.r*(math.cos(self.psi*3.141592/180))
-            #target[self.num][2] = self.z + self.r*(math.sin(self.psi*3.141592/180))
-            target[self.num][0] = self.r*(math.cos(self.psi*3.141592/180))
-            target[self.num][2] = self.r*(math.sin(self.psi*3.141592/180))
-
-            self.psi += 1
-            self.cnt += 1
-            if self.cnt >= self.rotation_cnt:
-                break
-            #elif self.cnt % 30.0 == 0.0:
-            #    if chk is 0:
-            #        target[self.num][1] += 0.30
-            #        chk = 1
-            #    else:
-            #        target[self.num][1] -= 0.30
-            #        chk = 0
-
-            if self.psi >= 360.0:
-                self.psi = 0.0
-            time.sleep(0.01)
-        '''
         init_x = 0.0
         init_z = 0.0
 
@@ -606,7 +566,7 @@ class sequence_1(Thread):
             prove = 0
         else:
             prove = 1
-        temp = 0.0        
+        
         while True:
             if (self.sp):
                 break
@@ -615,40 +575,40 @@ class sequence_1(Thread):
             if target[self.num][0] >= self.r:
                 target[self.num][0] = self.r
                 prove = 0
-                #target[self.num][2] = math.sqrt(self.r**2 - target[self.num][0]**2) * minus
-                #while True:
-                #    if -0.01 <= pos[self.num][2] and pos[self.num][2] <= 0.01:
-                #        break
             elif target[self.num][0] <= -self.r:
                 target[self.num][0] = -self.r
                 prove = 1
-               #target[self.num][2] = math.sqrt(self.r**2 - target[self.num][0]**2) * minus
-                #while True:
-                #    if -0.01 <= pos[self.num][2] and pos[self.num][2] <= 0.01:
-                #        break
         
             target[self.num][2] = math.sqrt(self.r**2 - target[self.num][0]**2) * minus
 
-            print("t_x : " + str(target[self.num][0]) + " t_y : " + str(target[self.num][2]) + " gap : " + str(temp-target[self.num][2]))
-            temp = target[self.num][2]
+            #print("t_x : " + str(target[self.num][0]) + " t_y : " + str(target[self.num][2]))
             while True:
                 # Check whether really move or not
                 #print("x : " + str(target[num][0]) + " z : " + str(target[num][2]))
                 #print("pos x : " + str(pos[num][0]) + " pos z : " + str(pos[num][2]))
-                time.sleep(0.005)
+                '''
+                time.sleep(0.004)
+                if ((target[num][0]-0.020) < pos[num][0]) and (pos[num][0] < (target[num][0]+0.020)) and ((target[num][2]-0.020) < pos[num][2]) and (pos[num][2] < (target[num][2]+0.020)) :
+                    # Check up and down based on center.
+                    if pos[num][2] > 0:
+                        target[num][0] -= 0.06
+                        minus = 1
+                    elif pos[num][2] < 0:
+                        target[num][0] += 0.06
+                        minus = -1
+                    break
+                '''
+                time.sleep(0.1)
                 if prove is 0:
-                    target[self.num][0] -= 0.002
-                    target[self.num][0] = round(target[self.num][0], 3)
+                    target[self.num][0] -= 0.03
                     minus = 1
                 elif prove is 1:
-                    target[self.num][0] += 0.002
-                    target[self.num][0] = round(target[self.num][0], 3)
+                    target[self.num][0] += 0.03
                     minus = -1
                 break
             # Check one round
             #if (init_x-0.020) < pos[num][0] and pos[num][0] < (init_x+0.020) and (init_z-0.020) < pos[num][2] and pos[num][2] < (init_z+0.020):
             #    break
-        '''
 
 
 def init_value():
@@ -768,7 +728,7 @@ while True:
     elif sel == "control":
         while(1):
             #Create Drone Operation you want.
-            print("1. only thrust mode\n2. Simulation\n3.hovering test(Play Only one drone)")
+            print("1. thrust input mode(hovering)\n2. only thrust mode\n3. auto hovering(height input)\n4. Multi drone control test\n5. Simulation\n7.hovering test(Play Only one drone)\n8.roll,pitch,yaw hovering test(Play Only one drone)")
             try:
                 val = int(input("Input : "))
             except Exception as e:
@@ -777,6 +737,26 @@ while True:
             if val is -1:
                 break
             if val is 1 :
+                channel = str(input("Channel input :"))
+                idx = findChanidx(channel)
+
+                roll_thread[0] = Roll(0)
+                pitch_thread[0] = Pitch(0)
+                roll_thread[0].start()
+                pitch_thread[0].start()
+                while(True):
+                    print("thrust input:")
+                    try:
+                        temp = int(input())
+                    except Exception as e:
+                        print("{}".format(e))
+                        continue
+                    if temp == -1 :
+                        thrust[idx] = 0
+                        break
+                    thrust[idx] = temp
+
+            elif val is 2 :
                 channel = str(input("Channel input :"))
                 idx = findChanidx(channel)
 
@@ -792,7 +772,59 @@ while True:
                         break
                     thrust[idx] = temp
 
-            elif val is 2 :
+            elif val is 3 :
+                channel = str(input("Channel input :"))
+                idx = findChanidx(channel)
+
+                roll_thread[0] = Roll(0)
+                pitch_thread[0] = Pitch(0)
+                thrust_thread[0] = Thrust(0)
+                roll_thread[0].start()
+                pitch_thread[0].start()
+                thrust_thread[0].start()
+
+                temp = str(input("To stop, any input:"))
+                if temp is not None:
+                    roll[0] = 0.0
+                    pitch[0] = 0.0
+                    thrust[0] = 0
+                    roll_thread[0].stop()
+                    pitch_thread[0].stop()
+                    thrust_thread[0].stop()
+
+            elif val is 4 :
+                channel = str(input("input first channel:"))
+                idx1 = findChanidx(channel)
+
+                channel = str(input("input second channel:"))
+                idx2 = findChanidx(channel)
+
+                while(True):
+                    print("drone 1 thrust :")
+                    try:
+                        temp = int(input())
+                    except Exception as e:
+                        print("{}".format(e))
+                        continue
+                    if temp == -1 :
+                        thrust[idx1] = 0
+                        thrust[idx2] = 0
+                        break
+                    thrust[idx1] = temp
+
+                    print("drone 2 thrust :")
+                    try:
+                        temp = int(input())
+                    except Exception as e:
+                        print("{}".format(e))
+                        continue
+                    if temp == -1 :
+                        thrust[idx1] = 0
+                        thrust[idx2] = 0
+                        break
+                    thrust[idx2] = temp
+
+            elif val is 5 :
                 global run_chk
                 global target
                 global thrust
@@ -810,7 +842,7 @@ while True:
                     #time.sleep(0.5)
 
                     run_chk = 1
-                    target[0][1] = 0.50
+                    #target[0][1] = 1.0
                     print(str(target[0][0]) + " " + str(target[0][1]) + " " + str(target[0][2]))
                     while True:
                         print("1. Move 2. land 3. Fly off")
@@ -821,14 +853,14 @@ while True:
                                 j = str(input("input : "))
                                 if j is '1':
                                     print("left")
-                                    SetTarget(0, target[0][0]-0.50, target[0][1], target[0][2])
-                                    SetTarget(1, target[1][0]-0.50, target[1][1], target[1][2])
-                                    SetTarget(2, target[2][0]-0.50, target[2][1], target[2][2])
+                                    SetTarget(0, target[0][0]-0.30, target[0][1], target[0][2])
+                                    SetTarget(1, target[1][0]-0.30, target[1][1], target[1][2])
+                                    SetTarget(2, target[2][0]-0.30, target[2][1], target[2][2])
                                 elif j is '2':
                                     print("right")
-                                    SetTarget(0, target[0][0]+0.50, target[0][1], target[0][2])
-                                    SetTarget(1, target[1][0]+0.50, target[1][1], target[1][2])
-                                    SetTarget(2, target[2][0]+0.50, target[2][1], target[2][2])
+                                    SetTarget(0, target[0][0]+0.30, target[0][1], target[0][2])
+                                    SetTarget(1, target[1][0]+0.30, target[1][1], target[1][2])
+                                    SetTarget(2, target[2][0]+0.30, target[2][1], target[2][2])
                                 elif j is '3':
                                     print("front")
                                     SetTarget(0, target[0][0], target[0][1], target[0][2]+0.30)
@@ -843,13 +875,13 @@ while True:
                                     print("exit")
                                     break
                                 elif j is '6':
-                                    circle1 = sequence_1(0,0.40,0.0)
-                                    #circle2 = sequence_1(1,0.50,90.0)
+                                    circle1 = sequence_1(0,0.60)
+                                    circle2 = sequence_1(1,0.60)
                                     circle1.start()
-                                    #circle2.start()
+                                    circle2.start()
                                     str(input("If you want to stop, Enter any key"))
                                     circle1.stop()
-                                    #circle2.stop()
+                                    circle2.stop()
                                 elif j is '7':
                                     location_debug()
                                 elif j is '8':
@@ -857,8 +889,6 @@ while True:
                                     y = float(input("Y : "))
                                     z = float(input("Z : "))
                                     SetTarget(0,x,y,z)
-                                elif j is '9':
-                                    yaw_target[0] = float(input("input yaw:"))
                         elif i is '2':
                             land()
                         elif i is '3':
@@ -871,7 +901,58 @@ while True:
                                 thrust[i] = 0
                             break
 
-            elif val is 3:
+            elif val is 6 :
+                '''
+                global thrust
+                global pitch
+                thrust[0] = 20000
+                while True:
+                    #thrust[0] = int(input("thrust:"))
+                    temp = float(input())
+                    pitch[0] = temp
+                '''
+                channel = str(input("Channel input : "))
+                ctrlthread[0] = ctrlThread(channel, 0)
+                client.test(channel)
+                ctrlthread[0].start()
+
+                channelSeq[0] = channel
+                hovering_thread[0] = Hovering(0)
+
+                #Test
+                #while True:
+                #    thrust[0] = int(input("Input thrust : "))
+                global run_chk
+                while True:
+                    #p = float(input("input p gain:"))
+                    #v_p = float(input("input vp gain:"))
+                    #v_i = float(input("input vi gain:"))
+                    #v_d = float(input("input vd gain:"))
+
+                    #hovering_thread[0] = Hovering(0)
+                    #hovering_thread[0].change_gain(p,v_p,v_i,v_d,"pitch")
+                    #hovering_thread[0].change_gain(v_p,v_i,v_d,"thrust")
+
+                    str(input("Start any key"))
+                    run_chk = 1
+                    #hovering_thread[0].start()
+                    while True:
+                        a = str(input("If you want to stop, Enter any key"))
+                        if a is 'w':
+                            pitch[0] += 5.0
+                        elif a is 's':
+                            pitch[0] -= 5.0
+                        elif a is 'q':
+                            run_chk = 0
+                            #hovering_thread[0].stop()
+                            pitch[0] = 0
+                            roll[0] = 0
+                            yaw[0] = 0
+                            thrust[0] = 0
+                            break
+                            #hovering_thread[0] = None
+
+            elif val is 7 :
                 '''
                 channel = str(input("Channel input : "))
                 ctrlthread[0] = ctrlThread(channel, 0)
@@ -928,6 +1009,34 @@ while True:
                             thrust[0] = 0
                             #hovering_thread[0] = None
                             break
+
+            elif val is 8 :
+                global run_chk
+                global target
+                global pos
+                global optical_flow
+                global optical_pos
+
+                hovering_thread[0] = Hovering(0)
+                while True:
+                    optical_flow = 1
+                    a = str(input("If you want to start, Enter any key"))
+                    hovering_thread[0] = Hovering(0)
+                    run_chk = 1
+                    #optical_flow = 1
+                    target[0][0] = optical_pos[0]
+                    target[0][1] = optical_pos[1]
+                    target[0][2] = optical_pos[2]
+
+                    print(str(target[0][0]) + " " + str(target[0][1]) + " " + str(target[0][2]))
+                    
+                    a = str(input("If you want to stop, Enter any key"))
+                    run_chk = 0
+
+                    pitch[0] = 0
+                    roll[0] = 0
+                    yaw[0] = 0
+                    thrust[0] = 0
                     
 
     elif sel == "exit" :

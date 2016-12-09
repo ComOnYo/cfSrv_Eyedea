@@ -36,7 +36,7 @@ import os
 import usb
 import logging
 
-import eyedea
+#import eyedea
 
 __author__ = 'Bitcraze AB'
 __all__ = ['Crazyradio']
@@ -118,7 +118,7 @@ class Crazyradio:
         if device is None:
             ret = _find_devices()
             dev_cnt = len(ret)
-            self.i = eyedea.find_Unused_Dongle()
+            #self.i = eyedea.find_Unused_Dongle()
             if self.i >= dev_cnt:
                 raise Exception("Connect more Crazyradio Dongle!")
             try:
@@ -167,7 +167,7 @@ class Crazyradio:
 
         self.handle = None
         self.dev = None
-        eyedea.release_dongle(self.i)
+        #eyedea.release_dongle(self.i)
     # Dongle configuration
     def set_channel(self, channel):
         """ Set the radio channel to be used """
