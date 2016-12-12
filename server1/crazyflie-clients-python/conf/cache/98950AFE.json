@@ -1,0 +1,754 @@
+{
+  "firmware": {
+    "revision1": {
+      "group": "firmware",
+      "ident": 59,
+      "pytype": "<H",
+      "access": 1,
+      "ctype": "uint16_t",
+      "name": "revision1",
+      "__class__": "ParamTocElement"
+    },
+    "revision0": {
+      "group": "firmware",
+      "ident": 58,
+      "pytype": "<L",
+      "access": 1,
+      "ctype": "uint32_t",
+      "name": "revision0",
+      "__class__": "ParamTocElement"
+    },
+    "modified": {
+      "group": "firmware",
+      "ident": 60,
+      "pytype": "<B",
+      "access": 1,
+      "ctype": "uint8_t",
+      "name": "modified",
+      "__class__": "ParamTocElement"
+    }
+  },
+  "imu_acc_lpf": {
+    "factor": {
+      "group": "imu_acc_lpf",
+      "ident": 66,
+      "pytype": "<B",
+      "access": 0,
+      "ctype": "uint8_t",
+      "name": "factor",
+      "__class__": "ParamTocElement"
+    }
+  },
+  "ring": {
+    "solidBlue": {
+      "group": "ring",
+      "ident": 75,
+      "pytype": "<B",
+      "access": 0,
+      "ctype": "uint8_t",
+      "name": "solidBlue",
+      "__class__": "ParamTocElement"
+    },
+    "glowstep": {
+      "group": "ring",
+      "ident": 77,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "glowstep",
+      "__class__": "ParamTocElement"
+    },
+    "emptyCharge": {
+      "group": "ring",
+      "ident": 78,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "emptyCharge",
+      "__class__": "ParamTocElement"
+    },
+    "fullCharge": {
+      "group": "ring",
+      "ident": 79,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "fullCharge",
+      "__class__": "ParamTocElement"
+    },
+    "solidGreen": {
+      "group": "ring",
+      "ident": 74,
+      "pytype": "<B",
+      "access": 0,
+      "ctype": "uint8_t",
+      "name": "solidGreen",
+      "__class__": "ParamTocElement"
+    },
+    "effect": {
+      "group": "ring",
+      "ident": 71,
+      "pytype": "<B",
+      "access": 0,
+      "ctype": "uint8_t",
+      "name": "effect",
+      "__class__": "ParamTocElement"
+    },
+    "headlightEnable": {
+      "group": "ring",
+      "ident": 76,
+      "pytype": "<B",
+      "access": 0,
+      "ctype": "uint8_t",
+      "name": "headlightEnable",
+      "__class__": "ParamTocElement"
+    },
+    "solidRed": {
+      "group": "ring",
+      "ident": 73,
+      "pytype": "<B",
+      "access": 0,
+      "ctype": "uint8_t",
+      "name": "solidRed",
+      "__class__": "ParamTocElement"
+    },
+    "neffect": {
+      "group": "ring",
+      "ident": 72,
+      "pytype": "<L",
+      "access": 1,
+      "ctype": "uint32_t",
+      "name": "neffect",
+      "__class__": "ParamTocElement"
+    }
+  },
+  "posi": {
+    "x_RateKi": {
+      "group": "posi",
+      "ident": 56,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "x_RateKi",
+      "__class__": "ParamTocElement"
+    },
+    "x_Kp": {
+      "group": "posi",
+      "ident": 52,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "x_Kp",
+      "__class__": "ParamTocElement"
+    },
+    "y_Kp": {
+      "group": "posi",
+      "ident": 46,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "y_Kp",
+      "__class__": "ParamTocElement"
+    },
+    "x_Kd": {
+      "group": "posi",
+      "ident": 54,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "x_Kd",
+      "__class__": "ParamTocElement"
+    },
+    "y_RateKd": {
+      "group": "posi",
+      "ident": 51,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "y_RateKd",
+      "__class__": "ParamTocElement"
+    },
+    "y_RateKp": {
+      "group": "posi",
+      "ident": 49,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "y_RateKp",
+      "__class__": "ParamTocElement"
+    },
+    "x_Ki": {
+      "group": "posi",
+      "ident": 53,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "x_Ki",
+      "__class__": "ParamTocElement"
+    },
+    "x_RateKd": {
+      "group": "posi",
+      "ident": 57,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "x_RateKd",
+      "__class__": "ParamTocElement"
+    },
+    "y_RateKi": {
+      "group": "posi",
+      "ident": 50,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "y_RateKi",
+      "__class__": "ParamTocElement"
+    },
+    "y_Ki": {
+      "group": "posi",
+      "ident": 47,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "y_Ki",
+      "__class__": "ParamTocElement"
+    },
+    "y_Kd": {
+      "group": "posi",
+      "ident": 48,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "y_Kd",
+      "__class__": "ParamTocElement"
+    },
+    "x_RateKp": {
+      "group": "posi",
+      "ident": 55,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "x_RateKp",
+      "__class__": "ParamTocElement"
+    }
+  },
+  "imu_tests": {
+    "MPU6500": {
+      "group": "imu_tests",
+      "ident": 63,
+      "pytype": "<B",
+      "access": 1,
+      "ctype": "uint8_t",
+      "name": "MPU6500",
+      "__class__": "ParamTocElement"
+    },
+    "HMC5883L": {
+      "group": "imu_tests",
+      "ident": 64,
+      "pytype": "<B",
+      "access": 1,
+      "ctype": "uint8_t",
+      "name": "HMC5883L",
+      "__class__": "ParamTocElement"
+    },
+    "MS5611": {
+      "group": "imu_tests",
+      "ident": 65,
+      "pytype": "<B",
+      "access": 1,
+      "ctype": "uint8_t",
+      "name": "MS5611",
+      "__class__": "ParamTocElement"
+    }
+  },
+  "sound": {
+    "freq": {
+      "group": "sound",
+      "ident": 69,
+      "pytype": "<H",
+      "access": 0,
+      "ctype": "uint16_t",
+      "name": "freq",
+      "__class__": "ParamTocElement"
+    },
+    "effect": {
+      "group": "sound",
+      "ident": 67,
+      "pytype": "<B",
+      "access": 0,
+      "ctype": "uint8_t",
+      "name": "effect",
+      "__class__": "ParamTocElement"
+    },
+    "ratio": {
+      "group": "sound",
+      "ident": 70,
+      "pytype": "<B",
+      "access": 0,
+      "ctype": "uint8_t",
+      "name": "ratio",
+      "__class__": "ParamTocElement"
+    },
+    "neffect": {
+      "group": "sound",
+      "ident": 68,
+      "pytype": "<L",
+      "access": 1,
+      "ctype": "uint32_t",
+      "name": "neffect",
+      "__class__": "ParamTocElement"
+    }
+  },
+  "imu_sensors": {
+    "HMC5883L": {
+      "group": "imu_sensors",
+      "ident": 61,
+      "pytype": "<B",
+      "access": 1,
+      "ctype": "uint8_t",
+      "name": "HMC5883L",
+      "__class__": "ParamTocElement"
+    },
+    "MS5611": {
+      "group": "imu_sensors",
+      "ident": 62,
+      "pytype": "<B",
+      "access": 1,
+      "ctype": "uint8_t",
+      "name": "MS5611",
+      "__class__": "ParamTocElement"
+    }
+  },
+  "flightmode": {
+    "stabModeRoll": {
+      "group": "flightmode",
+      "ident": 8,
+      "pytype": "<B",
+      "access": 0,
+      "ctype": "uint8_t",
+      "name": "stabModeRoll",
+      "__class__": "ParamTocElement"
+    },
+    "stabModeYaw": {
+      "group": "flightmode",
+      "ident": 10,
+      "pytype": "<B",
+      "access": 0,
+      "ctype": "uint8_t",
+      "name": "stabModeYaw",
+      "__class__": "ParamTocElement"
+    },
+    "stabModePitch": {
+      "group": "flightmode",
+      "ident": 9,
+      "pytype": "<B",
+      "access": 0,
+      "ctype": "uint8_t",
+      "name": "stabModePitch",
+      "__class__": "ParamTocElement"
+    },
+    "yawRst": {
+      "group": "flightmode",
+      "ident": 7,
+      "pytype": "<B",
+      "access": 0,
+      "ctype": "uint8_t",
+      "name": "yawRst",
+      "__class__": "ParamTocElement"
+    },
+    "yawMode": {
+      "group": "flightmode",
+      "ident": 6,
+      "pytype": "<B",
+      "access": 0,
+      "ctype": "uint8_t",
+      "name": "yawMode",
+      "__class__": "ParamTocElement"
+    },
+    "althold": {
+      "group": "flightmode",
+      "ident": 5,
+      "pytype": "<B",
+      "access": 0,
+      "ctype": "uint8_t",
+      "name": "althold",
+      "__class__": "ParamTocElement"
+    }
+  },
+  "altHold": {
+    "pidInitAccKp": {
+      "group": "altHold",
+      "ident": 40,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "pidInitAccKp",
+      "__class__": "ParamTocElement"
+    },
+    "pidInitRateKp": {
+      "group": "altHold",
+      "ident": 37,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "pidInitRateKp",
+      "__class__": "ParamTocElement"
+    },
+    "pidInitRateKi": {
+      "group": "altHold",
+      "ident": 38,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "pidInitRateKi",
+      "__class__": "ParamTocElement"
+    },
+    "pidInitRateKd": {
+      "group": "altHold",
+      "ident": 39,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "pidInitRateKd",
+      "__class__": "ParamTocElement"
+    },
+    "thrustBase": {
+      "group": "altHold",
+      "ident": 45,
+      "pytype": "<H",
+      "access": 0,
+      "ctype": "uint16_t",
+      "name": "thrustBase",
+      "__class__": "ParamTocElement"
+    },
+    "pidInitAccKd": {
+      "group": "altHold",
+      "ident": 42,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "pidInitAccKd",
+      "__class__": "ParamTocElement"
+    },
+    "pidInitKp": {
+      "group": "altHold",
+      "ident": 43,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "pidInitKp",
+      "__class__": "ParamTocElement"
+    },
+    "pidInitAccKi": {
+      "group": "altHold",
+      "ident": 41,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "pidInitAccKi",
+      "__class__": "ParamTocElement"
+    },
+    "pidInitKi": {
+      "group": "altHold",
+      "ident": 44,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "pidInitKi",
+      "__class__": "ParamTocElement"
+    }
+  },
+  "pid_attitude": {
+    "yaw_kp": {
+      "group": "pid_attitude",
+      "ident": 26,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "yaw_kp",
+      "__class__": "ParamTocElement"
+    },
+    "roll_kd": {
+      "group": "pid_attitude",
+      "ident": 22,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "roll_kd",
+      "__class__": "ParamTocElement"
+    },
+    "pitch_kp": {
+      "group": "pid_attitude",
+      "ident": 23,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "pitch_kp",
+      "__class__": "ParamTocElement"
+    },
+    "yaw_kd": {
+      "group": "pid_attitude",
+      "ident": 28,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "yaw_kd",
+      "__class__": "ParamTocElement"
+    },
+    "yaw_ki": {
+      "group": "pid_attitude",
+      "ident": 27,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "yaw_ki",
+      "__class__": "ParamTocElement"
+    },
+    "roll_ki": {
+      "group": "pid_attitude",
+      "ident": 21,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "roll_ki",
+      "__class__": "ParamTocElement"
+    },
+    "pitch_kd": {
+      "group": "pid_attitude",
+      "ident": 25,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "pitch_kd",
+      "__class__": "ParamTocElement"
+    },
+    "pitch_ki": {
+      "group": "pid_attitude",
+      "ident": 24,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "pitch_ki",
+      "__class__": "ParamTocElement"
+    },
+    "roll_kp": {
+      "group": "pid_attitude",
+      "ident": 20,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "roll_kp",
+      "__class__": "ParamTocElement"
+    }
+  },
+  "sensorfusion6": {
+    "baseZacc": {
+      "group": "sensorfusion6",
+      "ident": 31,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "baseZacc",
+      "__class__": "ParamTocElement"
+    },
+    "kp": {
+      "group": "sensorfusion6",
+      "ident": 29,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "kp",
+      "__class__": "ParamTocElement"
+    },
+    "ki": {
+      "group": "sensorfusion6",
+      "ident": 30,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "ki",
+      "__class__": "ParamTocElement"
+    }
+  },
+  "cpu": {
+    "flash": {
+      "group": "cpu",
+      "ident": 0,
+      "pytype": "<H",
+      "access": 1,
+      "ctype": "uint16_t",
+      "name": "flash",
+      "__class__": "ParamTocElement"
+    },
+    "id1": {
+      "group": "cpu",
+      "ident": 2,
+      "pytype": "<L",
+      "access": 1,
+      "ctype": "uint32_t",
+      "name": "id1",
+      "__class__": "ParamTocElement"
+    },
+    "id0": {
+      "group": "cpu",
+      "ident": 1,
+      "pytype": "<L",
+      "access": 1,
+      "ctype": "uint32_t",
+      "name": "id0",
+      "__class__": "ParamTocElement"
+    },
+    "id2": {
+      "group": "cpu",
+      "ident": 3,
+      "pytype": "<L",
+      "access": 1,
+      "ctype": "uint32_t",
+      "name": "id2",
+      "__class__": "ParamTocElement"
+    }
+  },
+  "acc": {
+    "vAccDeadband": {
+      "group": "acc",
+      "ident": 35,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "vAccDeadband",
+      "__class__": "ParamTocElement"
+    },
+    "velZAlpha": {
+      "group": "acc",
+      "ident": 34,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "velZAlpha",
+      "__class__": "ParamTocElement"
+    },
+    "saturation": {
+      "group": "acc",
+      "ident": 36,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "saturation",
+      "__class__": "ParamTocElement"
+    }
+  },
+  "desired": {
+    "aslTau": {
+      "group": "desired",
+      "ident": 32,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "aslTau",
+      "__class__": "ParamTocElement"
+    },
+    "tune": {
+      "group": "desired",
+      "ident": 33,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "tune",
+      "__class__": "ParamTocElement"
+    }
+  },
+  "system": {
+    "selftestPassed": {
+      "group": "system",
+      "ident": 4,
+      "pytype": "<b",
+      "access": 0,
+      "ctype": "int8_t",
+      "name": "selftestPassed",
+      "__class__": "ParamTocElement"
+    }
+  },
+  "pid_rate": {
+    "yaw_kp": {
+      "group": "pid_rate",
+      "ident": 17,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "yaw_kp",
+      "__class__": "ParamTocElement"
+    },
+    "roll_kd": {
+      "group": "pid_rate",
+      "ident": 13,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "roll_kd",
+      "__class__": "ParamTocElement"
+    },
+    "pitch_kp": {
+      "group": "pid_rate",
+      "ident": 14,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "pitch_kp",
+      "__class__": "ParamTocElement"
+    },
+    "yaw_kd": {
+      "group": "pid_rate",
+      "ident": 19,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "yaw_kd",
+      "__class__": "ParamTocElement"
+    },
+    "yaw_ki": {
+      "group": "pid_rate",
+      "ident": 18,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "yaw_ki",
+      "__class__": "ParamTocElement"
+    },
+    "roll_ki": {
+      "group": "pid_rate",
+      "ident": 12,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "roll_ki",
+      "__class__": "ParamTocElement"
+    },
+    "pitch_kd": {
+      "group": "pid_rate",
+      "ident": 16,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "pitch_kd",
+      "__class__": "ParamTocElement"
+    },
+    "pitch_ki": {
+      "group": "pid_rate",
+      "ident": 15,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "pitch_ki",
+      "__class__": "ParamTocElement"
+    },
+    "roll_kp": {
+      "group": "pid_rate",
+      "ident": 11,
+      "pytype": "<f",
+      "access": 0,
+      "ctype": "float",
+      "name": "roll_kp",
+      "__class__": "ParamTocElement"
+    }
+  }
+}

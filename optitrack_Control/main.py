@@ -13,7 +13,7 @@ from NatNetClient import NatNetClient
 pos = [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]]
 
 # target position(Init position)
-target = [[0.00,0.50,0.00],[0.00,1.00,0.00],[0.00,1.00,0.00],[4,4,4],[5,5,5],[6,6,6],[7,7,7],[8,8,8],[9,9,9],[10,10,10]]
+target = [[0.00,0.70,0.00],[0.00,0.70,0.00],[0.00,0.70,0.00],[4,0.70,4],[5,5,5],[6,6,6],[7,7,7],[8,8,8],[9,9,9],[10,10,10]]
 
 # velocity
 velo_x = [0.0]*10
@@ -25,8 +25,8 @@ velo_pre_z = [0.0]*10
 
 #Input Channel you control 10 Drone
 #This sequence is the same Log sequence.
-ctrlDrone = ['90','61','50','80','0','0','0','0','0','0']
-DroneCnt = 1
+ctrlDrone = ['50','10','50','90','0','0','0','0','0','0']
+DroneCnt = 2
 #
 log_thread = [0]*10
 acc_zw = [0]*10
@@ -44,6 +44,7 @@ optical_pos = [0,0,0]
 
 yaw_target = [2.0]*10
 yaw_value = [0.0]*10
+yaw_prev = [0.0]*10
 gyro_z = [0.0]*10
 def receiveRigidBodyFrame( id, position, rotation ):
     global pos
@@ -61,11 +62,13 @@ def receiveRigidBodyFrame( id, position, rotation ):
     global first_check
     global target
 
+    global yaw_value
+    global yaw_prev
      
     if first_check[id-1] is 1 :
         target[id-1][0] = position[0]
         target[id-1][2] = position[2]
-        print(str(target[0][0]) +", " + str(target[0][2]))
+        print(str(target[id-1][0]) +", " + str(target[id-1][2]))
         first_check[id-1]=0
     
     global optical_flow
@@ -85,10 +88,28 @@ def receiveRigidBodyFrame( id, position, rotation ):
     temp = math.atan2(2.0*(qx*qz+qw*qy),qw*qw-qx*qx-qy*qy+qz*qz)
     temp2 = temp * 180.0 /  3.141592
 
-    if temp2 < 0:
-         yaw_value[id-1] = temp2*(-1)
-    else:
-         yaw_value[id-1] = temp2*(-1)
+    #print(temp2)
+    #print(temp2-yaw_prev[id-1])
+    temp2 *= -1   
+
+    #print(temp2)
+ 
+    '''
+    print(temp2-yaw_prev[id-1], end=" ")
+    if temp2-yaw_prev[id-1] < -300 or 300 < temp2-yaw_prev[id-1]:
+        yaw_value[id-1] = temp2
+    elif 85 < temp2-yaw_prev[id-1] or temp2-yaw_prev[id-1] < -85 :
+        #yaw_value[id-1] = yaw_prev[id-1]
+        yaw_value[id-1] = temp2 + 90
+    else: 
+        yaw_value[id-1] = temp2
+    yaw_prev[id-1] = yaw_value[id-1]
+    '''
+    #if temp2 < 0:
+    #     yaw_value[id-1] = temp2*(-1)
+    #else:
+    #     yaw_value[id-1] = temp2*(-1)
+    yaw_value[id-1] = temp2
     #temp2 = 0.0
 #    if temp2 < 0:
 #        yaw_value[id-1] = temp2+360
@@ -100,10 +121,12 @@ def receiveRigidBodyFrame( id, position, rotation ):
 #    else :
 #        yaw_value[id-1] -= 180
 
-#    print(yaw_value[id-1])
+    #print(id, end=" ")
+    #print(yaw_value[id-1])
 
     #print(position)
     #pos[id-1] = list(position)
+    #print(run_chk)
     if run_chk is 1:
         #print(str(target[0][0]) +", " + str(target[0][2]))
 
@@ -127,6 +150,7 @@ def receiveRigidBodyFrame( id, position, rotation ):
         pos[id-1] = list(position)
         #print(str(target[0][0]-pos[id-1][0]) + ", " + str(target[0][1]-pos[id-1][1]) + ", " + str(target[0][2]-pos[id-1][2]))
 
+        #print("laskdjf")
         hovering_thread[id-1].run_()
 
 streamingClient = NatNetClient()
@@ -174,6 +198,7 @@ class _LogThread(Thread):
         self._socket = socket
         self.num = num
         global acc_zw
+        global gyro_z
         #self.zw = 0.0
     def run(self):
         while True:
@@ -181,6 +206,7 @@ class _LogThread(Thread):
             if log["event"] == "data":
                 acc_zw[self.num] = log["variables"]["acc.WZ"]
                 gyro_z[self.num] = log["variables"]["gyro.z"]
+                #print("asdf")
 
 class ctrlThread(Thread):
     def __init__(self,channel,idx, *args):
@@ -392,6 +418,7 @@ class Hovering(Thread):
 
         self.sp = False
 
+        print(self.drone_idx)
     def stop(self):
         self.sp = True
         try:
@@ -445,6 +472,7 @@ class Hovering(Thread):
         roll_gap = gap
 
         #roll[self.drone_idx] = -gap
+        #print(velo_z[self.drone_idx], end=" ")
         #print("roll gap:" + str(-gap))
 
         #pitch control                                       x   t_x
@@ -458,7 +486,7 @@ class Hovering(Thread):
         elif gap <= -40.0:
             gap = -40.0
         pitch_gap = gap
-
+        #print(velo_x[self.drone_idx], end=" ")
         #print("pitch " + str(-gap))
         #pitch[self.drone_idx] = -gap
         
@@ -479,6 +507,7 @@ class Hovering(Thread):
         elif gap <= -180.0:
             gap = -180.0
         #print("yaw " + str(gap))
+
         yaw[self.drone_idx] = gap
 
         #thrust control
@@ -540,7 +569,7 @@ class sequence_1(Thread):
         self.cnt = 0.0
         self.sp = False
 
-        self.rotation_cnt = 2 * 360.0
+        self.rotation_cnt = 10 * 360.0
         self.psi = psi
         self.x = 0.0
         self.y = 0.0
@@ -571,8 +600,8 @@ class sequence_1(Thread):
             target[self.num][0] = self.r*(math.cos(self.psi*3.141592/180))
             target[self.num][2] = self.r*(math.sin(self.psi*3.141592/180))
 
-            self.psi += 1
-            self.cnt += 1
+            self.psi += 0.5
+            self.cnt += 0.5
             if self.cnt >= self.rotation_cnt:
                 break
             #elif self.cnt % 30.0 == 0.0:
@@ -586,70 +615,169 @@ class sequence_1(Thread):
             if self.psi >= 360.0:
                 self.psi = 0.0
             time.sleep(0.01)
-        '''
-        init_x = 0.0
-        init_z = 0.0
 
-        init_x = target[self.num][0]
-        print(init_z)
-        print(self.r)
-        print(target[self.num][0])
-        init_z = math.sqrt(self.r**2 - target[self.num][0]**2)
-        print(init_z)
-        print(self.r)
-        print(target[self.num][0])
+class Triangle(Thread):
     
-        prove = 0
-        minus = 1
+    def __init__(self, num, r, point, *args):
+        super(Triangle, self).__init__(*args)
+        self.sp = False
+        self.num = num
+        self.r = r
+        self.chk = 0
 
-        if pos[self.num][2] > 0:
-            prove = 0
-        else:
-            prove = 1
-        temp = 0.0        
+        global target
+        global pos
+
+        if point == 0:
+            target[self.num][0] = r/2
+            target[self.num][2] = self.r * math.cos(30*3.141592/180)/2
+            self.chk = 1
+            self.temp = target[self.num][2]
+            self.temp2 = -target[self.num][2]
+        elif point == 1:
+            target[self.num][0] = 0.0
+            target[self.num][2] = -self.r * math.cos(30*3.141592/180)/2
+            self.chk = 2
+            self.temp = -target[self.num][2]
+            self.temp2 = target[self.num][2]
+        elif point == 2:
+            target[self.num][0] = -r/2
+            target[self.num][2] = self.r * math.cos(30*3.141592/180)/2
+            self.chk = 0
+            self.temp = target[self.num][2]
+            self.temp2 = -target[self.num][2]
+        #self.temp = target[self.num][2]
+        #self.temp2 = -target[self.num][2]
+    def stop(self):
+        self.sp = True
+        try:
+            self.join()
+        except Exception:
+            pass
+
+    def run(self):
         while True:
             if (self.sp):
                 break
-            
-            # calc Z    z  =       sqrt(r^2 - x^2)
-            if target[self.num][0] >= self.r:
-                target[self.num][0] = self.r
-                prove = 0
-                #target[self.num][2] = math.sqrt(self.r**2 - target[self.num][0]**2) * minus
-                #while True:
-                #    if -0.01 <= pos[self.num][2] and pos[self.num][2] <= 0.01:
-                #        break
-            elif target[self.num][0] <= -self.r:
-                target[self.num][0] = -self.r
-                prove = 1
-               #target[self.num][2] = math.sqrt(self.r**2 - target[self.num][0]**2) * minus
-                #while True:
-                #    if -0.01 <= pos[self.num][2] and pos[self.num][2] <= 0.01:
-                #        break
-        
-            target[self.num][2] = math.sqrt(self.r**2 - target[self.num][0]**2) * minus
 
-            print("t_x : " + str(target[self.num][0]) + " t_y : " + str(target[self.num][2]) + " gap : " + str(temp-target[self.num][2]))
-            temp = target[self.num][2]
-            while True:
-                # Check whether really move or not
-                #print("x : " + str(target[num][0]) + " z : " + str(target[num][2]))
-                #print("pos x : " + str(pos[num][0]) + " pos z : " + str(pos[num][2]))
-                time.sleep(0.005)
-                if prove is 0:
-                    target[self.num][0] -= 0.002
-                    target[self.num][0] = round(target[self.num][0], 3)
-                    minus = 1
-                elif prove is 1:
-                    target[self.num][0] += 0.002
-                    target[self.num][0] = round(target[self.num][0], 3)
-                    minus = -1
+            if self.chk is 0:
+                target[self.num][0] += 0.01
+                target[self.num][0] = round(target[self.num][0],3)
+                print("x : " + str(target[self.num][0]) + " z : " + str(target[self.num][2]))
+                if target[self.num][0] == (self.r)/2 :
+                    self.chk = 1
+
+            elif self.chk is 1:
+                target[self.num][0] -= 0.01
+                target[self.num][2] = self.temp - math.tan(60*3.141592/180)*(self.r/2-target[self.num][0])
+                target[self.num][0] = round(target[self.num][0],3)
+                print(self.r)
+                print(target[self.num][0])
+                print("x : " + str(target[self.num][0]) + "z : " + str(target[self.num][2]))
+                if target[self.num][0] == 0:
+                    self.chk = 2
+
+            elif self.chk is 2:
+                target[self.num][0] -= 0.01
+                target[self.num][2] = self.temp2 - math.tan(60*3.141592/180)*(target[self.num][0])
+                target[self.num][0] = round(target[self.num][0],3)
+                print("x : " + str(target[self.num][0]) + " z : " + str(target[self.num][2]))
+                if target[self.num][0] == -((self.r)/2):
+                    self.chk = 0
+            time.sleep(0.04)
+            #target[self.num][0] = 
+            #target[self.num][1] = 
+
+class Rectangle(Thread):
+    def __init__(self, num, width, height, point, *args):
+        super(Rectangle, self).__init__(*args)
+        self.sp = False
+        self.num = num
+        self.width = width
+        self.height = height
+        self.chk = 0
+
+        global target
+        global pos
+
+        if point == 0:
+            target[self.num][0] = width/2.0
+            target[self.num][2] = height/2.0
+            self.chk = 1
+        elif point == 1:
+            target[self.num][0] = width/2.0
+            target[self.num][2] = -height/2.0
+            self.chk = 2
+        elif point == 2:
+            target[self.num][0] = -width/2.0
+            target[self.num][2] = -height/2.0
+            self.chk = 3
+        elif point == 3:
+            target[self.num][0] = -width/2.0
+            target[self.num][2] = height/2.0
+            self.chk = 0
+
+        #target[self.num][0] = 0.0
+        #target[self.num][2] = height/2.0
+    def stop(self):
+        self.sp = True
+        try:
+            self.join()
+        except Exception:
+            pass
+
+    def run(self):
+        while True:
+            if (self.sp):
                 break
-            # Check one round
-            #if (init_x-0.020) < pos[num][0] and pos[num][0] < (init_x+0.020) and (init_z-0.020) < pos[num][2] and pos[num][2] < (init_z+0.020):
-            #    break
-        '''
 
+            if self.chk is 0:
+                target[self.num][0] += 0.01
+                target[self.num][0] = round(target[self.num][0],3)
+                print("x : " + str(target[self.num][0]))
+                if target[self.num][0] == (self.width)/2 :
+                    self.chk = 1
+
+            elif self.chk is 1:
+                target[self.num][2] -= 0.01
+                target[self.num][2] = round(target[self.num][2],3)
+                print("z : " + str(target[self.num][2]))
+                if target[self.num][2] == -((self.height)/2):
+                    self.chk = 2
+
+            elif self.chk is 2:
+                target[self.num][0] -= 0.01
+                target[self.num][0] = round(target[self.num][0],3)
+                print("x : " + str(target[self.num][0]))
+                if target[self.num][0] == -((self.width)/2):
+                    self.chk = 3
+
+            elif self.chk is 3:
+                target[self.num][2] += 0.01
+                target[self.num][2] = round(target[self.num][2],3)
+                print("z : " + str(target[self.num][2]))
+                if target[self.num][2] == (self.height)/2:
+                    self.chk = 0
+
+            time.sleep(0.03)
+
+class Square(Thread):
+    def __init__(self, num, r, *args):
+        super(Square, self).__init__(*args)
+        self.num = num
+        self.r = r
+
+    def stop(self):
+        self.sp = True
+        try:
+            self.join()
+        except Exception:
+            pass
+
+    def run(self):
+        while True:
+            if (self.sp):
+                break
 
 def init_value():
     #global pos
@@ -748,8 +876,10 @@ while True:
                 if error == -1:
                     print("connect fail!!!")
                     continue
-                ctrlthread[connCnt] = ctrlThread(ctrlDrone[i], connCnt)
-                ctrlthread[connCnt].start()
+
+                if i == 0:
+                    ctrlthread[connCnt] = ctrlThread(ctrlDrone[i], connCnt)
+                    ctrlthread[connCnt].start()
 
                 client.setLog(ctrlDrone[i])
                 log_thread[connCnt] = _LogThread(client.getLog(ctrlDrone[i]), i)
@@ -799,26 +929,21 @@ while True:
                 for i in range(DroneCnt):
                     hovering_thread[i] = Hovering(i)
 
-                #a = ultraThread(0)
-                #b = ultraThread(1)
-                #a.start()
-                #b.start()
-
                 while True:
                     str(input("Start any key"))
-                    #thrust[0] = 50000
-                    #time.sleep(0.5)
 
                     run_chk = 1
-                    target[0][1] = 0.50
+                    target[0][1] = 0.70
+                    target[1][1] = 0.70
                     print(str(target[0][0]) + " " + str(target[0][1]) + " " + str(target[0][2]))
                     while True:
                         print("1. Move 2. land 3. Fly off")
                         i = str(input("Input : "))
                         if i is '1':
                             while True:
-                                print("1. left 2. right 3. front 4. back 5.stop 6.circle 7.location_debug 8.setTarget")
+                                print("1. left 2. right 3. front 4. back 5.stop 6.circle 7.location_debug 8.setTarget 9. yaw input 10.Rectangle")
                                 j = str(input("input : "))
+                                print(j)
                                 if j is '1':
                                     print("left")
                                     SetTarget(0, target[0][0]-0.50, target[0][1], target[0][2])
@@ -844,12 +969,12 @@ while True:
                                     break
                                 elif j is '6':
                                     circle1 = sequence_1(0,0.40,0.0)
-                                    #circle2 = sequence_1(1,0.50,90.0)
+                                    circle2 = sequence_1(1,0.70,90.0)
                                     circle1.start()
-                                    #circle2.start()
+                                    circle2.start()
                                     str(input("If you want to stop, Enter any key"))
                                     circle1.stop()
-                                    #circle2.stop()
+                                    circle2.stop()
                                 elif j is '7':
                                     location_debug()
                                 elif j is '8':
@@ -859,6 +984,41 @@ while True:
                                     SetTarget(0,x,y,z)
                                 elif j is '9':
                                     yaw_target[0] = float(input("input yaw:"))
+
+                                elif j == '10':
+                                    rectangle = Rectangle(0,0.40,0.40, 0)
+                                    str(input("start"))
+                                    rectangle.start()
+                                    str(input("If you want to stop, Enter any key"))
+                                    rectangle.stop()
+                                elif j == '11':
+                                    triangle = Triangle(0,0.50,0)
+                                    #triangle2 = Triangle(1,0.50,1)
+                                    str(input("start"))
+                                    triangle.start()
+                                    #triangle2.start()
+                                    str(input("If you want to stop, Enter any key"))
+                                    triangle.stop()
+                                    #triangle2.stop()
+                                elif j == '12':
+                                    #triangle = Triangle(0,0.50,0)
+                                    circle1 = sequence_1(0,0.50,90.0)
+                                    circle2 = sequence_1(1,0.50,270.0)
+                                    circle3 = sequence_1(2,0.50,180.0)
+                                    #circle4 = sequence_1(3,0.50,270.0)
+                                    str(input("start"))
+                                    #triangle.start()
+                                    circle1.start()
+                                    circle2.start()
+                                    circle3.start()
+                                    #circle4.start()
+                                    str(input("If you want to stop, Enter any key"))
+                                    #triangle.stop()
+                                    circle1.stop()
+                                    circle2.stop()
+                                    circle3.stop()
+                                    #circle4.stop()
+
                         elif i is '2':
                             land()
                         elif i is '3':
