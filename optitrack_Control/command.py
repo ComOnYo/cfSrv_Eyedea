@@ -8,7 +8,16 @@ def ServerAddr(kind="", idx="") :
         return "tcp://localhost:20"+idx+"4"
 
 def connDrone(channel=""):
-    uri = "radio://0/"+channel+"/2M"
+    if channel == '110':
+        uri = "radio://0/"+channel+"/2M/E7E7E7E7E9"
+    elif channel == '50':
+        uri = "radio://0/"+channel+"/2M/E7E7E7E7E8"
+    elif channel == '70':
+        uri = "radio://0/"+channel+"/2M/E7E7E7E7EA"
+    elif channel == '90':
+        uri = "radio://0/"+channel+"/2M/E7E7E7E7E7"
+    else:
+        uri = "radio://0/"+channel+"/2M"
     send = {
 		"version": 1,
 		"cmd" : "connect",
