@@ -5,7 +5,6 @@ import time
 import math
 import signal
 import zmq
-import tensorflow as tf
 
 from NatNetClient import NatNetClient
 
@@ -13,7 +12,7 @@ from NatNetClient import NatNetClient
 pos = [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]]
 
 # target position(Init position)
-target = [[0.00,0.50,0.00],[0.00,0.7,0.00],[0.00,0.7,0.00],[4,0.70,4],[5,5,5],[6,6,6],[7,7,7],[8,8,8],[9,9,9],[10,10,10]]
+target = [[0.00,0.70,0.00],[0.00,0.7,0.00],[0.00,0.7,0.00],[0.0,0.70,0.0],[0.0,0.70,0.0],[0.0,0.70,0.0],[0.0,0.7,0.0],[0.0,0.7,0.0],[0.0,0.7,0.0],[0.0,0.7,0.0]]
 
 # velocity
 velo_x = [0.0]*10
@@ -25,8 +24,8 @@ velo_pre_z = [0.0]*10
 
 #Input Channel you control 10 Drone
 #This sequence is the same Log sequence.
-ctrlDrone = ['110','50','70','90','125','99','15','0','0','0']
-DroneCnt = 7
+ctrlDrone = ['54','30','99','125','125','99','113','125','0']
+DroneCnt = 2
 #
 log_socket = [0]*10
 #log_thread = [0]*10
@@ -210,10 +209,13 @@ class ctrlThread(Thread):
             if (self.sp):
                 break
             #print(thrust)
+            #a = time.time()
             for i in range(DroneCnt):
                 client.setControl(ctrlDrone[i], roll[i], pitch[i], yaw[i], thrust[i])
-                #print(str(pitch[self.idx]) + ", " + str(roll[self.idx]) + ", " + str(thrust[self.idx]))
+                #print(i, end=": ")
+                #print(str(pitch[i]) + ", " + str(roll[i]) + ", " + str(thrust[i]))
             time.sleep(0.004)
+            #print(time.time() - a)
 
 
 class pidCtrl():
@@ -435,6 +437,7 @@ class Hovering(Thread):
 
     def run_(self):
 
+        a = time.time()
         #roll control                                        z   t_z
         #print("z : " + str(roll_value), end=" ")
         gap = (self.pid_roll).pidUpdate(float(pos[self.drone_idx][2]), 2)
@@ -501,6 +504,8 @@ class Hovering(Thread):
             temp = 0
         #print(temp)
         thrust[self.drone_idx] = temp
+        
+        #print(time.time() - a)
 
 
 #For concurrently connect
@@ -513,17 +518,19 @@ class connectThread(Thread):
         self.idx = idx
     def run(self):
         #print(self.idx)
-        error = client.Connect(self.channel, True, self.idx)
+        error = client.Connect(self.channel, False, self.idx)
         if error == -1:
             print("connect fail!!!")
             return
+
+        '''
         client.setLog(self.channel)
         ctrlthread[self.idx] = ctrlThread(self.channel, self.idx)
         ctrlthread[self.idx].start()
 
         log_thread[connCnt] = _LogThread(client.getLog(channel))
         log_thread[connCnt].start()
-
+        '''
         channelSeq[self.idx] = self.channel
 
 def land():
@@ -539,8 +546,11 @@ def findChanidx(channel = ""):
 
 # Circle      DroneNum, radius
 class sequence_1(Thread):
-    def __init__(self, num, r, psi, *args):
+    def __init__(self, num, r, psi, current=0, *args):
         super(sequence_1, self).__init__(*args)
+        global pos
+        global target
+
         self.num = num
         self.r = r
         self.cnt = 0.0
@@ -548,11 +558,18 @@ class sequence_1(Thread):
 
         self.rotation_cnt = 10 * 360.0
         self.psi = psi
-        self.x = 0.0
-        self.y = 0.0
 
-        target[self.num][0] = self.r*(math.cos(self.psi*3.141592/180))
-        target[self.num][2] = self.r*(math.sin(self.psi*3.141592/180))
+        self.x = pos[self.num][0]
+        self.z = pos[self.num][2]
+
+        self.current = current
+
+        if current == 1:
+            target[self.num][0] = self.x + self.r*(math.cos(self.psi*3.141592/180))
+            target[self.num][2] = self.z + self.r*(math.sin(self.psi*3.141592/180))
+        else:
+            target[self.num][0] = self.r*(math.cos(self.psi*3.141592/180))
+            target[self.num][2] = self.r*(math.sin(self.psi*3.141592/180))
     def stop(self):
         self.sp = True
         try:
@@ -567,18 +584,20 @@ class sequence_1(Thread):
         #init_x = pos[num][0]
         #init_z = pos[num][2]
 
-        self.x = pos[self.num][0]
-        self.z = pos[self.num][2]
+        #self.x = pos[self.num][0]
+        #self.z = pos[self.num][2]
 
         chk = 0
         while True:
             if (self.sp):
                 break
 
-            #target[self.num][0] = self.x + self.r*(math.cos(self.psi*3.141592/180))
-            #target[self.num][2] = self.z + self.r*(math.sin(self.psi*3.141592/180))
-            target[self.num][0] = self.r*(math.cos(self.psi*3.141592/180))
-            target[self.num][2] = self.r*(math.sin(self.psi*3.141592/180))
+            if self.current == 1:
+                target[self.num][0] = self.x + self.r*(math.cos(self.psi*3.141592/180))
+                target[self.num][2] = self.z + self.r*(math.sin(self.psi*3.141592/180))
+            else:
+                target[self.num][0] = self.r*(math.cos(self.psi*3.141592/180))
+                target[self.num][2] = self.r*(math.sin(self.psi*3.141592/180))
 
             self.psi += 0.5
             self.cnt += 0.5
@@ -742,6 +761,51 @@ class Rectangle(Thread):
             time.sleep(0.03)
 
 
+def P_1():
+    global target
+
+    print("start p_1")
+    SetTarget(0, 0.40, target[0][1], 0)
+    time.sleep(2)
+
+    SetTarget(1, 0.15, target[1][1], 0)
+    time.sleep(2)
+
+    SetTarget(2, -0.15, target[2][1], 0)
+    time.sleep(2)
+
+    SetTarget(3, -0.40, target[3][1], 0)
+    time.sleep(2)
+def P_2():
+    global target
+
+    print("start p_2")
+    SetTarget(0, 0.40, target[0][1], 0.40)
+    SetTarget(1, 0.15, target[1][1], 0.40)
+    SetTarget(2, -0.15, target[2][1], 0.40)
+    SetTarget(3, -0.40, target[3][1], 0.40)
+
+    time.sleep(2)
+    
+    SetTarget(0, 0.40, target[0][1], 0.0)
+    SetTarget(1, 0.15, target[1][1], 0.0)
+    SetTarget(2, -0.15, target[2][1], 0.0)
+    SetTarget(3, -0.40, target[3][1], 0.0)
+
+    time.sleep(2)
+
+    SetTarget(0, 0.40, target[0][1], -0.40)
+    SetTarget(1, 0.15, target[1][1], -0.40)
+    SetTarget(2, -0.15, target[2][1], -0.40)
+    SetTarget(3, -0.40, target[3][1], -0.40)
+
+    time.sleep(2)
+
+    SetTarget(0, 0.40, target[0][1], 0.0)
+    SetTarget(1, 0.15, target[1][1], 0.0)
+    SetTarget(2, -0.15, target[2][1], 0.0)
+    SetTarget(3, -0.40, target[3][1], 0.0)
+
 def init_value():
     #global pos
     global velo_x
@@ -774,6 +838,7 @@ def print_value():
 
 def SetTarget(num = 0, x = 0.0, y = 0.0, z = 0.0):
     global target
+    
     target[num][0] = x
     target[num][1] = y
     target[num][2] = z
@@ -832,6 +897,18 @@ while True:
             for i in range(DroneCnt):
                 cT[i] = connectThread(ctrlDrone[i], i)
                 cT[i].start()
+
+            time.sleep(3)
+            ctrlthread = ctrlThread()
+            ctrlthread.start()
+
+
+            for i in range(DroneCnt):
+                client.setLog(ctrlDrone[i])
+                log_socket[i] = client.getLog(ctrlDrone[i])
+
+            log_thread = _LogThread(log_socket, DroneCnt)
+            log_thread.start()
 
         elif val is 2:
             for i in range(DroneCnt):
@@ -977,10 +1054,16 @@ while True:
                                     #triangle2.stop()
                                 elif j == '12':
                                     #triangle = Triangle(0,0.50,0)
+
+                                    #current position cental
+                                    #circle1 = sequence_1(0,0.20,0.0, 1)
+
                                     circle1 = sequence_1(0,0.50,0.0)
-                                    circle2 = sequence_1(1,0.50,90.0)
-                                    circle3 = sequence_1(2,0.50,180.0)
-                                    circle4 = sequence_1(3,0.50,270.0)
+                                    circle2 = sequence_1(1,0.50,45.0)
+                                    circle3 = sequence_1(2,0.50,90.0)
+                                    circle4 = sequence_1(3,0.50,180.0)
+                                    circle5 = sequence_1(4,0.50,225.0)
+                                    circle6 = sequence_1(5,0.50,270.0)
                                     #circle4 = sequence_1(3,0.50,270.0)
                                     str(input("start"))
                                     #triangle.start()
@@ -988,6 +1071,8 @@ while True:
                                     circle2.start()
                                     circle3.start()
                                     circle4.start()
+                                    circle5.start()
+                                    circle6.start()
                                     #circle4.start()
                                     str(input("If you want to stop, Enter any key"))
                                     #triangle.stop()
@@ -995,6 +1080,8 @@ while True:
                                     circle2.stop()
                                     circle3.stop()
                                     circle4.stop()
+                                    circle5.stop()
+                                    circle6.stop()
                                     #circle4.stop()
                                 elif j == '13':
                                     while True:
@@ -1003,6 +1090,9 @@ while True:
                                             break
                                         SetTarget(0, pos[1][0], target[0][1], pos[1][2])
                                         SetTarget(1, pos[0][0], target[1][1], pos[0][2])
+                                elif j == '14':
+                                    P_1()
+                                    P_2()
 
                         elif i is '2':
                             land()

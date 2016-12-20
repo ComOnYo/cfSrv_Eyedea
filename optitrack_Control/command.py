@@ -8,16 +8,28 @@ def ServerAddr(kind="", idx="") :
         return "tcp://localhost:20"+idx+"4"
 
 def connDrone(channel=""):
-    if channel == '110':
-        uri = "radio://0/"+channel+"/2M/E7E7E7E7E9"
-    elif channel == '50':
-        uri = "radio://0/"+channel+"/2M/E7E7E7E7E8"
-    elif channel == '70':
-        uri = "radio://0/"+channel+"/2M/E7E7E7E7EA"
-    elif channel == '90':
+    if channel == '17':
+        uri = "radio://0/"+channel+"/1M/1717171717"
+    elif channel == '18':
+        uri = "radio://0/"+channel+"/2M/ABABABABAB"
+    elif channel == '42':
+        uri = "radio://0/"+channel+"/2M/4242424242"
+    elif channel == '54':
         uri = "radio://0/"+channel+"/2M/E7E7E7E7E7"
+    elif channel == '3':
+        uri = "radio://0/"+channel+"/1M/E7E7E7E7E7"
+    elif channel == '125':
+        uri = "radio://0/"+channel+"/2M/E7E7E7E7E7"
+    elif channel == '64':
+        uri = "radio://0/"+channel+"/250K/E7E7E7E7E7"
+    elif channel == '99':
+        uri = "radio://0/"+channel+"/2M/E7E7E7E7E7"
+    elif channel == '30':
+        uri = "radio://0/"+channel+"/2M/E7E7E7E7E7"
+    elif channel == '87':
+        uri = "radio://0/"+channel+"/1M/E7E7E7E7E7"
     else:
-        uri = "radio://0/"+channel+"/2M"
+        uri = "radio://0/"+channel+"/2M/E7E7E7E7E7"
     send = {
 		"version": 1,
 		"cmd" : "connect",

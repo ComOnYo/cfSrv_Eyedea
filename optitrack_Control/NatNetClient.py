@@ -15,6 +15,7 @@ class NatNetClient:
     def __init__( self ):
         # Change this value to the IP address of the NatNet server.
         #self.serverIPAddress = "192.168.123.76"
+        #self.serverIPAddress = "169.254.190.190"
 
         # This should match the multicast address listed in Motive's streaming settings.
         self.multicastAddress = "239.255.42.99"

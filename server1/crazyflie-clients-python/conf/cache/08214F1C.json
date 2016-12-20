@@ -1,0 +1,952 @@
+{
+  "sys": {
+    "canfly": {
+      "__class__": "LogTocElement",
+      "name": "canfly",
+      "ident": 4,
+      "group": "sys",
+      "access": 0,
+      "ctype": "int8_t",
+      "pytype": "<b"
+    }
+  },
+  "debug": {
+    "y": {
+      "__class__": "LogTocElement",
+      "name": "y",
+      "ident": 21,
+      "group": "debug",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "xdis": {
+      "__class__": "LogTocElement",
+      "name": "xdis",
+      "ident": 22,
+      "group": "debug",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "eulerRollDesired": {
+      "__class__": "LogTocElement",
+      "name": "eulerRollDesired",
+      "ident": 26,
+      "group": "debug",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "thrust": {
+      "__class__": "LogTocElement",
+      "name": "thrust",
+      "ident": 30,
+      "group": "debug",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "P_position": {
+      "__class__": "LogTocElement",
+      "name": "P_position",
+      "ident": 25,
+      "group": "debug",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "rawAsl": {
+      "__class__": "LogTocElement",
+      "name": "rawAsl",
+      "ident": 31,
+      "group": "debug",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "ydis": {
+      "__class__": "LogTocElement",
+      "name": "ydis",
+      "ident": 23,
+      "group": "debug",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "v": {
+      "__class__": "LogTocElement",
+      "name": "v",
+      "ident": 29,
+      "group": "debug",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "d": {
+      "__class__": "LogTocElement",
+      "name": "d",
+      "ident": 28,
+      "group": "debug",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "act": {
+      "__class__": "LogTocElement",
+      "name": "act",
+      "ident": 18,
+      "group": "debug",
+      "access": 0,
+      "ctype": "int32_t",
+      "pytype": "<i"
+    },
+    "R_position": {
+      "__class__": "LogTocElement",
+      "name": "R_position",
+      "ident": 24,
+      "group": "debug",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "eulerPitchDesired": {
+      "__class__": "LogTocElement",
+      "name": "eulerPitchDesired",
+      "ident": 27,
+      "group": "debug",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "a": {
+      "__class__": "LogTocElement",
+      "name": "a",
+      "ident": 19,
+      "group": "debug",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "x": {
+      "__class__": "LogTocElement",
+      "name": "x",
+      "ident": 20,
+      "group": "debug",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    }
+  },
+  "motor": {
+    "m2": {
+      "__class__": "LogTocElement",
+      "name": "m2",
+      "ident": 34,
+      "group": "motor",
+      "access": 0,
+      "ctype": "int32_t",
+      "pytype": "<i"
+    },
+    "m4": {
+      "__class__": "LogTocElement",
+      "name": "m4",
+      "ident": 32,
+      "group": "motor",
+      "access": 0,
+      "ctype": "int32_t",
+      "pytype": "<i"
+    },
+    "m3": {
+      "__class__": "LogTocElement",
+      "name": "m3",
+      "ident": 35,
+      "group": "motor",
+      "access": 0,
+      "ctype": "int32_t",
+      "pytype": "<i"
+    },
+    "m1": {
+      "__class__": "LogTocElement",
+      "name": "m1",
+      "ident": 33,
+      "group": "motor",
+      "access": 0,
+      "ctype": "int32_t",
+      "pytype": "<i"
+    }
+  },
+  "gyro": {
+    "y": {
+      "__class__": "LogTocElement",
+      "name": "y",
+      "ident": 53,
+      "group": "gyro",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "z": {
+      "__class__": "LogTocElement",
+      "name": "z",
+      "ident": 54,
+      "group": "gyro",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "x": {
+      "__class__": "LogTocElement",
+      "name": "x",
+      "ident": 52,
+      "group": "gyro",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    }
+  },
+  "gps": {
+    "lat": {
+      "__class__": "LogTocElement",
+      "name": "lat",
+      "ident": 78,
+      "group": "gps",
+      "access": 0,
+      "ctype": "int32_t",
+      "pytype": "<i"
+    },
+    "hAcc": {
+      "__class__": "LogTocElement",
+      "name": "hAcc",
+      "ident": 81,
+      "group": "gps",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "hMSL": {
+      "__class__": "LogTocElement",
+      "name": "hMSL",
+      "ident": 80,
+      "group": "gps",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "fix": {
+      "__class__": "LogTocElement",
+      "name": "fix",
+      "ident": 83,
+      "group": "gps",
+      "access": 0,
+      "ctype": "int32_t",
+      "pytype": "<i"
+    },
+    "nsat": {
+      "__class__": "LogTocElement",
+      "name": "nsat",
+      "ident": 82,
+      "group": "gps",
+      "access": 0,
+      "ctype": "int32_t",
+      "pytype": "<i"
+    },
+    "lon": {
+      "__class__": "LogTocElement",
+      "name": "lon",
+      "ident": 79,
+      "group": "gps",
+      "access": 0,
+      "ctype": "int32_t",
+      "pytype": "<i"
+    }
+  },
+  "mag_raw": {
+    "y": {
+      "__class__": "LogTocElement",
+      "name": "y",
+      "ident": 62,
+      "group": "mag_raw",
+      "access": 0,
+      "ctype": "int16_t",
+      "pytype": "<h"
+    },
+    "z": {
+      "__class__": "LogTocElement",
+      "name": "z",
+      "ident": 63,
+      "group": "mag_raw",
+      "access": 0,
+      "ctype": "int16_t",
+      "pytype": "<h"
+    },
+    "x": {
+      "__class__": "LogTocElement",
+      "name": "x",
+      "ident": 61,
+      "group": "mag_raw",
+      "access": 0,
+      "ctype": "int16_t",
+      "pytype": "<h"
+    }
+  },
+  "pwm": {
+    "m3_pwm": {
+      "__class__": "LogTocElement",
+      "name": "m3_pwm",
+      "ident": 2,
+      "group": "pwm",
+      "access": 0,
+      "ctype": "uint32_t",
+      "pytype": "<L"
+    },
+    "m1_pwm": {
+      "__class__": "LogTocElement",
+      "name": "m1_pwm",
+      "ident": 0,
+      "group": "pwm",
+      "access": 0,
+      "ctype": "uint32_t",
+      "pytype": "<L"
+    },
+    "m4_pwm": {
+      "__class__": "LogTocElement",
+      "name": "m4_pwm",
+      "ident": 3,
+      "group": "pwm",
+      "access": 0,
+      "ctype": "uint32_t",
+      "pytype": "<L"
+    },
+    "m2_pwm": {
+      "__class__": "LogTocElement",
+      "name": "m2_pwm",
+      "ident": 1,
+      "group": "pwm",
+      "access": 0,
+      "ctype": "uint32_t",
+      "pytype": "<L"
+    }
+  },
+  "altHold": {
+    "thrust": {
+      "__class__": "LogTocElement",
+      "name": "thrust",
+      "ident": 58,
+      "group": "altHold",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "estimatedZ": {
+      "__class__": "LogTocElement",
+      "name": "estimatedZ",
+      "ident": 60,
+      "group": "altHold",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "targetZ": {
+      "__class__": "LogTocElement",
+      "name": "targetZ",
+      "ident": 59,
+      "group": "altHold",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    }
+  },
+  "extrx": {
+    "yaw": {
+      "__class__": "LogTocElement",
+      "name": "yaw",
+      "ident": 77,
+      "group": "extrx",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "ch1": {
+      "__class__": "LogTocElement",
+      "name": "ch1",
+      "ident": 71,
+      "group": "extrx",
+      "access": 0,
+      "ctype": "uint16_t",
+      "pytype": "<H"
+    },
+    "pitch": {
+      "__class__": "LogTocElement",
+      "name": "pitch",
+      "ident": 76,
+      "group": "extrx",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "ch0": {
+      "__class__": "LogTocElement",
+      "name": "ch0",
+      "ident": 70,
+      "group": "extrx",
+      "access": 0,
+      "ctype": "uint16_t",
+      "pytype": "<H"
+    },
+    "thrust": {
+      "__class__": "LogTocElement",
+      "name": "thrust",
+      "ident": 74,
+      "group": "extrx",
+      "access": 0,
+      "ctype": "uint16_t",
+      "pytype": "<H"
+    },
+    "ch2": {
+      "__class__": "LogTocElement",
+      "name": "ch2",
+      "ident": 72,
+      "group": "extrx",
+      "access": 0,
+      "ctype": "uint16_t",
+      "pytype": "<H"
+    },
+    "ch3": {
+      "__class__": "LogTocElement",
+      "name": "ch3",
+      "ident": 73,
+      "group": "extrx",
+      "access": 0,
+      "ctype": "uint16_t",
+      "pytype": "<H"
+    },
+    "roll": {
+      "__class__": "LogTocElement",
+      "name": "roll",
+      "ident": 75,
+      "group": "extrx",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    }
+  },
+  "acc": {
+    "y": {
+      "__class__": "LogTocElement",
+      "name": "y",
+      "ident": 41,
+      "group": "acc",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "vel_x": {
+      "__class__": "LogTocElement",
+      "name": "vel_x",
+      "ident": 50,
+      "group": "acc",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "z": {
+      "__class__": "LogTocElement",
+      "name": "z",
+      "ident": 42,
+      "group": "acc",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "velocityZ": {
+      "__class__": "LogTocElement",
+      "name": "velocityZ",
+      "ident": 45,
+      "group": "acc",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "dis_acc": {
+      "__class__": "LogTocElement",
+      "name": "dis_acc",
+      "ident": 44,
+      "group": "acc",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "WZ": {
+      "__class__": "LogTocElement",
+      "name": "WZ",
+      "ident": 43,
+      "group": "acc",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "LPFrate": {
+      "__class__": "LogTocElement",
+      "name": "LPFrate",
+      "ident": 48,
+      "group": "acc",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "dis_accWZ": {
+      "__class__": "LogTocElement",
+      "name": "dis_accWZ",
+      "ident": 47,
+      "group": "acc",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "Rate": {
+      "__class__": "LogTocElement",
+      "name": "Rate",
+      "ident": 49,
+      "group": "acc",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "dis_velocityZ": {
+      "__class__": "LogTocElement",
+      "name": "dis_velocityZ",
+      "ident": 46,
+      "group": "acc",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "vel_y": {
+      "__class__": "LogTocElement",
+      "name": "vel_y",
+      "ident": 51,
+      "group": "acc",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "x": {
+      "__class__": "LogTocElement",
+      "name": "x",
+      "ident": 40,
+      "group": "acc",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    }
+  },
+  "pm": {
+    "chargeCurrent": {
+      "__class__": "LogTocElement",
+      "name": "chargeCurrent",
+      "ident": 67,
+      "group": "pm",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "state": {
+      "__class__": "LogTocElement",
+      "name": "state",
+      "ident": 68,
+      "group": "pm",
+      "access": 0,
+      "ctype": "int8_t",
+      "pytype": "<b"
+    },
+    "extCurr": {
+      "__class__": "LogTocElement",
+      "name": "extCurr",
+      "ident": 66,
+      "group": "pm",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "extVbat": {
+      "__class__": "LogTocElement",
+      "name": "extVbat",
+      "ident": 65,
+      "group": "pm",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "vbat": {
+      "__class__": "LogTocElement",
+      "name": "vbat",
+      "ident": 64,
+      "group": "pm",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    }
+  },
+  "radio": {
+    "rssi": {
+      "__class__": "LogTocElement",
+      "name": "rssi",
+      "ident": 69,
+      "group": "radio",
+      "access": 0,
+      "ctype": "uint8_t",
+      "pytype": "<B"
+    }
+  },
+  "ctrltarget": {
+    "roll": {
+      "__class__": "LogTocElement",
+      "name": "roll",
+      "ident": 55,
+      "group": "ctrltarget",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "yaw": {
+      "__class__": "LogTocElement",
+      "name": "yaw",
+      "ident": 57,
+      "group": "ctrltarget",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "pitch": {
+      "__class__": "LogTocElement",
+      "name": "pitch",
+      "ident": 56,
+      "group": "ctrltarget",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    }
+  },
+  "ranging": {
+    "distance1": {
+      "__class__": "LogTocElement",
+      "name": "distance1",
+      "ident": 84,
+      "group": "ranging",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "pressure4": {
+      "__class__": "LogTocElement",
+      "name": "pressure4",
+      "ident": 95,
+      "group": "ranging",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "pressure1": {
+      "__class__": "LogTocElement",
+      "name": "pressure1",
+      "ident": 92,
+      "group": "ranging",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "pressure7": {
+      "__class__": "LogTocElement",
+      "name": "pressure7",
+      "ident": 98,
+      "group": "ranging",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "distance2": {
+      "__class__": "LogTocElement",
+      "name": "distance2",
+      "ident": 85,
+      "group": "ranging",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "distance7": {
+      "__class__": "LogTocElement",
+      "name": "distance7",
+      "ident": 90,
+      "group": "ranging",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "state": {
+      "__class__": "LogTocElement",
+      "name": "state",
+      "ident": 101,
+      "group": "ranging",
+      "access": 0,
+      "ctype": "uint16_t",
+      "pytype": "<H"
+    },
+    "pressure5": {
+      "__class__": "LogTocElement",
+      "name": "pressure5",
+      "ident": 96,
+      "group": "ranging",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "airtime": {
+      "__class__": "LogTocElement",
+      "name": "airtime",
+      "ident": 100,
+      "group": "ranging",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "pressure8": {
+      "__class__": "LogTocElement",
+      "name": "pressure8",
+      "ident": 99,
+      "group": "ranging",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "pressure3": {
+      "__class__": "LogTocElement",
+      "name": "pressure3",
+      "ident": 94,
+      "group": "ranging",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "distance4": {
+      "__class__": "LogTocElement",
+      "name": "distance4",
+      "ident": 87,
+      "group": "ranging",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "distance8": {
+      "__class__": "LogTocElement",
+      "name": "distance8",
+      "ident": 91,
+      "group": "ranging",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "pressure2": {
+      "__class__": "LogTocElement",
+      "name": "pressure2",
+      "ident": 93,
+      "group": "ranging",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "distance3": {
+      "__class__": "LogTocElement",
+      "name": "distance3",
+      "ident": 86,
+      "group": "ranging",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "distance6": {
+      "__class__": "LogTocElement",
+      "name": "distance6",
+      "ident": 89,
+      "group": "ranging",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "pressure6": {
+      "__class__": "LogTocElement",
+      "name": "pressure6",
+      "ident": 97,
+      "group": "ranging",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "distance5": {
+      "__class__": "LogTocElement",
+      "name": "distance5",
+      "ident": 88,
+      "group": "ranging",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    }
+  },
+  "baro": {
+    "height": {
+      "__class__": "LogTocElement",
+      "name": "height",
+      "ident": 13,
+      "group": "baro",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "temp": {
+      "__class__": "LogTocElement",
+      "name": "temp",
+      "ident": 9,
+      "group": "baro",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "asl": {
+      "__class__": "LogTocElement",
+      "name": "asl",
+      "ident": 7,
+      "group": "baro",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "pre": {
+      "__class__": "LogTocElement",
+      "name": "pre",
+      "ident": 6,
+      "group": "baro",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "Ultra": {
+      "__class__": "LogTocElement",
+      "name": "Ultra",
+      "ident": 5,
+      "group": "baro",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "realLpf_2": {
+      "__class__": "LogTocElement",
+      "name": "realLpf_2",
+      "ident": 12,
+      "group": "baro",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "pressure": {
+      "__class__": "LogTocElement",
+      "name": "pressure",
+      "ident": 11,
+      "group": "baro",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "changeF": {
+      "__class__": "LogTocElement",
+      "name": "changeF",
+      "ident": 16,
+      "group": "baro",
+      "access": 0,
+      "ctype": "int32_t",
+      "pytype": "<i"
+    },
+    "compensation": {
+      "__class__": "LogTocElement",
+      "name": "compensation",
+      "ident": 17,
+      "group": "baro",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "comAsl": {
+      "__class__": "LogTocElement",
+      "name": "comAsl",
+      "ident": 14,
+      "group": "baro",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "rawAsl": {
+      "__class__": "LogTocElement",
+      "name": "rawAsl",
+      "ident": 10,
+      "group": "baro",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "vel": {
+      "__class__": "LogTocElement",
+      "name": "vel",
+      "ident": 15,
+      "group": "baro",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "estimatedZ": {
+      "__class__": "LogTocElement",
+      "name": "estimatedZ",
+      "ident": 8,
+      "group": "baro",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    }
+  },
+  "stabilizer": {
+    "roll": {
+      "__class__": "LogTocElement",
+      "name": "roll",
+      "ident": 36,
+      "group": "stabilizer",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "yaw": {
+      "__class__": "LogTocElement",
+      "name": "yaw",
+      "ident": 38,
+      "group": "stabilizer",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "pitch": {
+      "__class__": "LogTocElement",
+      "name": "pitch",
+      "ident": 37,
+      "group": "stabilizer",
+      "access": 0,
+      "ctype": "float",
+      "pytype": "<f"
+    },
+    "thrust": {
+      "__class__": "LogTocElement",
+      "name": "thrust",
+      "ident": 39,
+      "group": "stabilizer",
+      "access": 0,
+      "ctype": "uint16_t",
+      "pytype": "<H"
+    }
+  }
+}

@@ -51,6 +51,9 @@ import array
 import binascii
 import struct
 
+import time
+debug = 1
+
 from cflib.drivers.crazyradio import Crazyradio
 from usb import USBError
 
@@ -400,6 +403,9 @@ class _RadioDriverThread(threading.Thread):
         logging.info("Has safelink: {}".format(self.has_safelink))
         self._link.needs_resending = not self.has_safelink
 
+        a = 0.0
+        global debug
+
         while (True):
             if (self.sp):
                 break
@@ -416,6 +422,9 @@ class _RadioDriverThread(threading.Thread):
                     "Error communicating with crazy radio ,it has probably "
                     "been unplugged!\nException:%s\n\n%s" % (
                         e, traceback.format_exc()))
+
+            print(" 6 : " + str(time.time()-a))
+            a = time.time()
 
             # Analise the in data packet ...
             if ackStatus is None:

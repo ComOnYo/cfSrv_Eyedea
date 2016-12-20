@@ -134,7 +134,7 @@ class RadioDriver(CRTPDriver):
         # Prepare the inter-thread communication queue
         self.in_queue = queue.Queue()
         # Limited size out queue to avoid "ReadBack" effect
-        self.out_queue = queue.Queue(1)
+        self.out_queue = queue.Queue(50)
 
         # Launch the comm thread
         self._thread = _RadioDriverThread(self.cradio, self.in_queue,

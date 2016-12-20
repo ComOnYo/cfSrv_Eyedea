@@ -36,6 +36,7 @@ USB dongle.
 import collections
 import logging
 import sys
+import time
 
 if sys.version_info < (3,):
     import Queue as queue
@@ -134,7 +135,7 @@ class RadioDriver(CRTPDriver):
         # Prepare the inter-thread communication queue
         self.in_queue = queue.Queue()
         # Limited size out queue to avoid "ReadBack" effect
-        self.out_queue = queue.Queue(1)
+        self.out_queue = queue.Queue(50)
 
         # Launch the comm thread
         self._thread = _RadioDriverThread(self.cradio, self.in_queue,
@@ -400,6 +401,7 @@ class _RadioDriverThread(threading.Thread):
         logging.info("Has safelink: {}".format(self.has_safelink))
         self._link.needs_resending = not self.has_safelink
 
+        a = 0.0
         while (True):
             if (self.sp):
                 break
@@ -417,6 +419,8 @@ class _RadioDriverThread(threading.Thread):
                     "been unplugged!\nException:%s\n\n%s" % (
                         e, traceback.format_exc()))
 
+            print(" 1 : " + str(time.time()-a))
+            a = time.time()
             # Analise the in data packet ...
             if ackStatus is None:
                 if (self.link_error_callback is not None):
