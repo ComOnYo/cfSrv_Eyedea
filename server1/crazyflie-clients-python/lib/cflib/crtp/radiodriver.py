@@ -419,7 +419,7 @@ class _RadioDriverThread(threading.Thread):
                     "been unplugged!\nException:%s\n\n%s" % (
                         e, traceback.format_exc()))
 
-            print(" 1 : " + str(time.time()-a))
+            #print(" 1 : " + str(time.time()-a))
             a = time.time()
             # Analise the in data packet ...
             if ackStatus is None:

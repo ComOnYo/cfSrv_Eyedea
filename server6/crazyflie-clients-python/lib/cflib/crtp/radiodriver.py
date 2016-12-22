@@ -52,7 +52,7 @@ import binascii
 import struct
 
 import time
-debug = 1
+debug = 0
 
 from cflib.drivers.crazyradio import Crazyradio
 from usb import USBError
@@ -422,8 +422,8 @@ class _RadioDriverThread(threading.Thread):
                     "Error communicating with crazy radio ,it has probably "
                     "been unplugged!\nException:%s\n\n%s" % (
                         e, traceback.format_exc()))
-
-            print(" 6 : " + str(time.time()-a))
+            if debug == 1:
+                print(" 6 : " + str(time.time()-a))
             a = time.time()
 
             # Analise the in data packet ...

@@ -55,11 +55,12 @@ def Connect(channel="", All=False, _idx = 0):
     if connCnt >= DRONE_CNT :
         print("Full connection!!!")
         return
-    elif findChanidx(channel) != -1 :
-        print("Channel : " + channel + " exist Link!!!")
-        return
+    #elif findChanidx(channel) != -1 :
+    #    print("Channel : " + channel + " exist Link!!!")
+    #    return
 
-    idx = seqEmptyChk()
+    #idx = seqEmptyChk()
+    idx = connCnt
 
     cmdSocket[idx] = context.socket(zmq.REQ)
     cmdSocket[idx].connect(command.ServerAddr("cmd", str(idx)))

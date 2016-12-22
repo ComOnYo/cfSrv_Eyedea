@@ -10,12 +10,12 @@ prev = 0.0
 def receiveRigidBodyFrame( id, position, rotation ):
     #print( "Received frame for rigid body", position)
 	global prev
-	if id == 4:
+	if id == 8:
 		print(time.time() - prev)
 	print(str(id) + " : ", position)
 	#print(str(rotation[0] * (180/3.14)) + " " + str(rotation[1] * (180/3.14)) + " " + str(rotation[2] * (180/3.14)) + " " + str(rotation[3] * (180/3.14)))
 	#print(str(id) + " : ", rotation)
-	if id == 4:
+	if id == 8:
 		prev = time.time()
 
 # This will create a new NatNet client

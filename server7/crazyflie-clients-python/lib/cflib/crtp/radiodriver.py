@@ -38,7 +38,7 @@ import logging
 import sys
 import time
 
-debug = 1
+debug = 0
 
 if sys.version_info < (3,):
     import Queue as queue
